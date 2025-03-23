@@ -1,30 +1,90 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  HttpCode,
+  HttpStatus,
+  Put,
+} from '@nestjs/common';
 import { UsersService } from './users.service';
-import { RegisterUserRequest, RegisterUserResponse } from 'src/models/user.model';
-
+import {
+  FindOneResponse,
+  LoginUserRequest,
+  LoginUserResponse,
+  RegisterUserRequest,
+  RegisterUserResponse,
+} from 'src/models/user.model';
+import { ApiResponse } from '@nestjs/swagger';
 
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Post()
-  create(@Body() createUserDto): Promise<RegisterUserResponse> {
+  @HttpCode(HttpStatus.OK)
+  @ApiResponse({
+    status: 200,
+    description: 'User successfully created',
+    type: RegisterUserResponse,
+  })
+  @Get(':id')
+  @HttpCode(200)
+  @ApiResponse({
+    status: 409,
+    description: 'User already exists',
+  })
+  @ApiResponse({
+    status: 422,
+    description: 'Passwords do not match',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'validation error',
+  })
+  create(
+    @Body() createUserDto: RegisterUserRequest,
+  ): Promise<RegisterUserResponse> {
     return this.usersService.create(createUserDto);
   }
 
+  @Patch()
+  @HttpCode(200)
+  @ApiResponse({
+    status: 200,
+    description: 'User successfully logged in',
+    type: LoginUserResponse,
+  })
+  login(@Body() loginUserDto: LoginUserRequest): Promise<any> {
+    return this.usersService.signIn(loginUserDto);
+  }
+
   @Get()
+  @ApiResponse({
+    status: 200,
+    description: 'User successfully found',
+    type: FindOneResponse,
+  })
   findAll() {
     return this.usersService.findAll();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.usersService.findOne(+id);
+  @ApiResponse({
+    status: 200,
+    description: 'User successfully found',
+    type: FindOneResponse,
+  })
+  findOne(@Param('id') id: string): Promise<FindOneResponse> {
+    return this.usersService.findOne(id);
   }
 
-  @Patch(':id')
+  @Put(':id')
   update(@Param('id') id: string, @Body() updateUserDto) {
-    return this.usersService.update(+id, updateUserDto);
+    return this.usersService.update(id, updateUserDto);
   }
 
   @Delete(':id')
