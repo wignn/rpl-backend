@@ -16,57 +16,65 @@ datasource db {
 
 model user {
   id_user   String      @id @default(cuid())
-  id_tenant String?
-  tenant    Tenant?     @relation(fields: [id_tenant], references: [id_tenant])
+  tenant    Tenant?
   email     String      @unique
   username  String
   password  String
   role      ROLE
-  rent_data Rent_Data[]
   deleted   Boolean     @default(false)
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
+  created_at DateTime    @default(now())
+  updated_at DateTime    @updatedAt
+  finance   finance[]
 }
 
 model Tenant {
   id_tenant  String   @id @default(cuid())
-  ktp_image  String
-  addres     String
+  report     Report[]
+  rent_data  Rent_Data?
+  id_user    String?  @unique
+  user       user?    @relation(fields: [id_user], references: [id_user])
+  full_name  String
+  address    String
   no_ktp     String
   status     STATUS
   no_telp    String
-  user       user[]
   deleted    Boolean  @default(false)
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
+  managepayment Managepayment[]
 }
 
 model Rent_Data {
   id_rent    String   @id @default(cuid())
-  id_user    String
-  user       user     @relation(fields: [id_user], references: [id_user])
+  id_tenant  String?  @unique  
+  tenant     Tenant?  @relation(fields: [id_tenant], references: [id_tenant])
   id_room    String
   room       Room     @relation(fields: [id_room], references: [id_room])
   rent_date  DateTime
   rent_out   DateTime
+  deleted    Boolean  @default(false)
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
-  Report     Report[]
+  finance    finance[]
 }
 
 model Room {
   id_room    String      @id @default(cuid())
-  roomtype   String
+  id_roomtype String    @unique
+  roomtype   RoomType    @relation(fields: [id_roomtype], references: [id_roomtype])
   status     ROOMSTATUS
   Rent_Data  Rent_Data[]
   deleted    Boolean     @default(false)
   created_at DateTime    @default(now())
   updated_at DateTime    @updatedAt
+  finance    finance[]
 }
 
 model RoomType {
   id_roomtype String   @id @default(cuid())
+  room        Room?
   room_type   String
+  price       Int
   deleted     Boolean  @default(false)
   created_at  DateTime @default(now())
   updated_at  DateTime @updatedAt
@@ -74,18 +82,16 @@ model RoomType {
 
 model Report {
   id_report           String       @id @default(cuid())
-  id_rent             String
+  id_tenant           String
+  tenant              Tenant?      @relation(fields: [id_tenant], references: [id_tenant])
   id_facility         String
+  facility            Facility?    @relation(fields: [id_facility], references: [id_facility])
   report_desc         String
   report_date         DateTime
   report_status       REPORTSTATUS
   deleted             Boolean      @default(false)
   created_at          DateTime     @default(now())
   updated_at          DateTime     @updatedAt
-  facility            Facility?    @relation(fields: [id_facility], references: [id_facility])
-  Rent_Data           Rent_Data?   @relation(fields: [rent_DataId_rent], references: [id_rent])
-  rent_DataId_rent    String?
-  facilityId_facility String?
 }
 
 model Facility {
@@ -96,6 +102,34 @@ model Facility {
   deleted       Boolean  @default(false)
   created_at    DateTime @default(now())
   updated_at    DateTime @updatedAt
+}
+
+model Managepayment{
+  id_mg      String   @id @default(cuid())
+  id_tenant  String
+  tenant     Tenant?  @relation(fields: [id_tenant], references: [id_tenant])
+  type       TYPE
+  payment_date DateTime
+  deleted    Boolean  @default(false)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+}
+
+model finance{
+  id_finance  String   @id @default(cuid())
+  id_rent     String
+  rent_data   Rent_Data?  @relation(fields: [id_rent], references: [id_rent])
+  id_user     String
+  user        user?       @relation(fields: [id_user], references: [id_user])
+  id_room     String
+  room        Room?       @relation(fields: [id_room], references: [id_room])
+  type        INOUT
+  category    String
+  amount      Int
+  payment_date DateTime
+  deleted     Boolean     @default(false)
+  created_at  DateTime    @default(now())
+  updated_at  DateTime    @updatedAt
 }
 
 enum STATUS {
@@ -116,4 +150,14 @@ enum ROOMSTATUS {
 enum REPORTSTATUS {
   PENDING
   SUCCESS
+}
+
+enum TYPE {
+  SUDAH
+  BELUM
+}
+
+enum INOUT {
+  INCOME
+  OUTCOME
 }
