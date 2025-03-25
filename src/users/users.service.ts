@@ -23,19 +23,18 @@ export class UsersService {
     private jwtService: JwtService,
   ) {}
 
-  async signIn(request: LoginUserRequest):Promise<any>{
+  async signIn(request: LoginUserRequest): Promise<any> {
     this.logger.info(`Signing in user`);
-    
+
     const user = await this.prismaService.user.findUnique({
       where: {
         email: request.email,
-      }
-    })
+      },
+    });
 
     if (!user) {
       throw new HttpException('Email or password is incorrect ', 404);
     }
-
 
     const passwordMatch = await bcrypt.compare(request.password, user.password);
     if (!passwordMatch) {
@@ -46,39 +45,36 @@ export class UsersService {
       username: user.username,
       isAdmin: user.role,
       sub: {
-          name: user.username,
+        name: user.username,
       },
-  };
+    };
 
-  return {
+    return {
       id: user.id_user,
       username: user.username,
       isAdmin: user.role,
       backendTokens: {
-          accessToken: await this.jwtService.signAsync(payload, {
-              expiresIn: '1h',
-              privateKey: process.env.JWT_SECRET_KEY,
-          }),
-          refreshToken: await this.jwtService.signAsync(payload, {
-              expiresIn: '7d',
-              privateKey: process.env.JWT_REFRESH_TOKEN
-          }),
+        accessToken: await this.jwtService.signAsync(payload, {
+          expiresIn: '1h',
+          privateKey: process.env.JWT_SECRET_KEY,
+        }),
+        refreshToken: await this.jwtService.signAsync(payload, {
+          expiresIn: '7d',
+          privateKey: process.env.JWT_REFRESH_TOKEN,
+        }),
       },
-  };
+    };
   }
 
   async create(request: RegisterUserRequest): Promise<RegisterUserResponse> {
     this.logger.info(`Creating user `);
-    console.log(request);
     const registerUserRequest: RegisterUserRequest =
       this.ValidationService.validate(UserValidation.create, request);
-    console.log(registerUserRequest, 'registerUserRequest');
     const confirm = await this.prismaService.user.findUnique({
       where: {
         email: registerUserRequest.email,
       },
     });
-    console.log(confirm);
     if (confirm) {
       throw new HttpException('User already exists', 409);
     }
@@ -87,9 +83,7 @@ export class UsersService {
       throw new HttpException('Passwords do not match', 400);
     }
 
-    console.log(registerUserRequest);
     const hashPassword = await bcrypt.hash(registerUserRequest.password, 10);
-    console.log(hashPassword);
     const user = await this.prismaService.user.create({
       data: {
         email: registerUserRequest.email,
@@ -149,8 +143,6 @@ export class UsersService {
     return `This action removes a #${id} user`;
   }
 
-
-
   async update(id: string, request) {
     this.logger.info(`Updating user`);
 
@@ -163,14 +155,13 @@ export class UsersService {
     if (!user) {
       throw new HttpException('Internal server error', 500);
     }
-    
+
     const updateUser = await this.prismaService.user.update({
       where: {
         id_user: id,
       },
       data: request,
-    })
-
+    });
 
     return {
       id: updateUser.id_user,
@@ -179,9 +170,6 @@ export class UsersService {
       role: updateUser.role as any,
       createdAt: updateUser.createdAt,
       updatedAt: updateUser.updatedAt,
-    }
+    };
   }
-
-
-  
 }

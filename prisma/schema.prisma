@@ -30,6 +30,7 @@ model user {
 
 model Tenant {
   id_tenant  String   @id @default(cuid())
+  ktp_image  String
   addres     String
   no_ktp     String
   status     STATUS
@@ -51,7 +52,6 @@ model Rent_Data {
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
   Report     Report[]
-
 }
 
 model Room {
@@ -73,17 +73,17 @@ model RoomType {
 }
 
 model Report {
-  id_report     String       @id @default(cuid())
-  id_rent       String
-  id_facility   String
-  report_desc   String
-  report_date   DateTime
-  report_status REPORTSTATUS
-  deleted       Boolean      @default(false)
-  created_at    DateTime     @default(now())
-  updated_at    DateTime     @updatedAt
-  facility            Facility?  @relation(fields: [id_facility], references: [id_facility])
-  Rent_Data           Rent_Data? @relation(fields: [rent_DataId_rent], references: [id_rent])
+  id_report           String       @id @default(cuid())
+  id_rent             String
+  id_facility         String
+  report_desc         String
+  report_date         DateTime
+  report_status       REPORTSTATUS
+  deleted             Boolean      @default(false)
+  created_at          DateTime     @default(now())
+  updated_at          DateTime     @updatedAt
+  facility            Facility?    @relation(fields: [id_facility], references: [id_facility])
+  Rent_Data           Rent_Data?   @relation(fields: [rent_DataId_rent], references: [id_rent])
   rent_DataId_rent    String?
   facilityId_facility String?
 }

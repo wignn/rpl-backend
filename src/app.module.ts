@@ -5,9 +5,11 @@ import { UsersModule } from './users/users.module';
 import { MiddlewareConsumer } from '@nestjs/common';
 
 import { CommonModule } from './common/common.module';
+import { TenantModule } from './tenant/tenant.module';
+import { FilesModule } from './files/files.module';
 
 @Module({
-  imports: [UsersModule, CommonModule],
+  imports: [UsersModule, CommonModule, TenantModule, FilesModule],
   controllers: [AppController],
   providers: [AppService],
 })

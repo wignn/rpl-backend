@@ -7,8 +7,8 @@ import {
   Param,
   Delete,
   HttpCode,
-  HttpStatus,
   Put,
+  UseGuards,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import {
@@ -19,13 +19,14 @@ import {
   RegisterUserResponse,
 } from 'src/models/user.model';
 import { ApiResponse } from '@nestjs/swagger';
+import { JwtGuard } from 'src/guards/jwt.guard';
 
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Post()
-  @HttpCode(HttpStatus.OK)
+  @HttpCode(200)
   @ApiResponse({
     status: 200,
     description: 'User successfully created',
@@ -62,6 +63,7 @@ export class UsersController {
     return this.usersService.signIn(loginUserDto);
   }
 
+  @UseGuards(JwtGuard)
   @Get()
   @ApiResponse({
     status: 200,
@@ -72,6 +74,7 @@ export class UsersController {
     return this.usersService.findAll();
   }
 
+  @UseGuards(JwtGuard)
   @Get(':id')
   @ApiResponse({
     status: 200,
@@ -82,11 +85,13 @@ export class UsersController {
     return this.usersService.findOne(id);
   }
 
+  @UseGuards(JwtGuard)
   @Put(':id')
   update(@Param('id') id: string, @Body() updateUserDto) {
     return this.usersService.update(id, updateUserDto);
   }
 
+  @UseGuards(JwtGuard)
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.usersService.remove(+id);
