@@ -12,11 +12,9 @@ import {
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import {
-  FindOneResponse,
   LoginUserRequest,
   LoginUserResponse,
-  RegisterUserRequest,
-  RegisterUserResponse,
+  userResponse,
 } from 'src/models/user.model';
 import { ApiResponse } from '@nestjs/swagger';
 import { JwtGuard } from 'src/guards/jwt.guard';
@@ -25,32 +23,7 @@ import { JwtGuard } from 'src/guards/jwt.guard';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @Post()
-  @HttpCode(200)
-  @ApiResponse({
-    status: 200,
-    description: 'User successfully created',
-    type: RegisterUserResponse,
-  })
-  @Get(':id')
-  @HttpCode(200)
-  @ApiResponse({
-    status: 409,
-    description: 'User already exists',
-  })
-  @ApiResponse({
-    status: 422,
-    description: 'Passwords do not match',
-  })
-  @ApiResponse({
-    status: 400,
-    description: 'validation error',
-  })
-  create(
-    @Body() createUserDto: RegisterUserRequest,
-  ): Promise<RegisterUserResponse> {
-    return this.usersService.create(createUserDto);
-  }
+
 
   @Patch()
   @HttpCode(200)
@@ -59,7 +32,15 @@ export class UsersController {
     description: 'User successfully logged in',
     type: LoginUserResponse,
   })
-  login(@Body() loginUserDto: LoginUserRequest): Promise<any> {
+  @ApiResponse({
+    status: 400,
+    description: 'validation error',
+  })
+  @ApiResponse({
+    status: 404,
+    description:"password or username not exist"
+  })
+  async login(@Body() loginUserDto: LoginUserRequest): Promise<LoginUserResponse> {
     return this.usersService.signIn(loginUserDto);
   }
 
@@ -68,9 +49,9 @@ export class UsersController {
   @ApiResponse({
     status: 200,
     description: 'User successfully found',
-    type: FindOneResponse,
+    type: userResponse,
   })
-  findAll() {
+  async findAll():Promise<userResponse[]> {
     return this.usersService.findAll();
   }
 
@@ -79,9 +60,9 @@ export class UsersController {
   @ApiResponse({
     status: 200,
     description: 'User successfully found',
-    type: FindOneResponse,
+    type: userResponse,
   })
-  findOne(@Param('id') id: string): Promise<FindOneResponse> {
+  findOne(@Param('id') id: string): Promise<userResponse> {
     return this.usersService.findOne(id);
   }
 
