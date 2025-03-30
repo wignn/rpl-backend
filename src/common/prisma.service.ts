@@ -28,7 +28,7 @@ export class PrismaService
         {
           emit: 'event',
           level: 'query',
-        },
+        }
       ],
     });
   }
@@ -44,7 +44,7 @@ export class PrismaService
       this.logger.error(e);
     });
     this.$on('query' as never, (e) => {
-      this.logger.info(`Query: ${e}`);
+    
     });
   }
   

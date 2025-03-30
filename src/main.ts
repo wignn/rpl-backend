@@ -7,7 +7,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const logger = app.get(WINSTON_MODULE_PROVIDER);
   app.useLogger(logger);
-  app.enableCors();
+  app.enableCors(); 
 
   const config = new DocumentBuilder()
     .setTitle('API')
@@ -18,7 +18,8 @@ async function bootstrap() {
 
   const documentFactory = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('docs', app, documentFactory);
-  app.enableCors();
+
   await app.listen(process.env.PORT ?? 4000);
 }
+
 bootstrap();

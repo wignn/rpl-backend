@@ -23,8 +23,6 @@ import { JwtGuard } from 'src/guards/jwt.guard';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-
-
   @Patch()
   @HttpCode(200)
   @ApiResponse({
@@ -40,8 +38,8 @@ export class UsersController {
     status: 404,
     description:"password or username not exist"
   })
-  async login(@Body() loginUserDto: LoginUserRequest): Promise<LoginUserResponse> {
-    return this.usersService.signIn(loginUserDto);
+  async login(@Body() request: LoginUserRequest): Promise<LoginUserResponse> {
+    return this.usersService.signIn(request);
   }
 
   @UseGuards(JwtGuard)

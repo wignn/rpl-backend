@@ -1,9 +1,6 @@
 import { ROLE } from '@prisma/client';
 import { ApiProperty } from '@nestjs/swagger';
 
-
-
-
 export class LoginUserRequest {
   @ApiProperty({
     example: 'wign',
@@ -16,6 +13,19 @@ export class LoginUserRequest {
     required: true,
   })
   password: string;
+}
+class backendTokens {
+  @ApiProperty({
+    example: 'backendTokens with access tokens',
+    required: true,
+  })
+  accessToken: string;
+
+  @ApiProperty({
+    example: 'backendTokens with refresh tokens',
+    required: true,
+  })
+  refreshToken: string;
 }
 
 export class LoginUserResponse {
@@ -41,24 +51,8 @@ export class LoginUserResponse {
     example: 'backendTokens with access and refresh tokens',
     required: false,
   })
-  backendTokens: backendTokens
+  backendTokens: backendTokens;
 }
-
-
-class backendTokens {
-  @ApiProperty({
-    example: 'backendTokens with access tokens',
-    required: true,
-  })
-  accessToken: string;
-
-  @ApiProperty({
-    example: 'backendTokens with refresh tokens',
-    required: true,
-  })
-  refreshToken: string;
-}
-
 
 export class userResponse {
   @ApiProperty({
