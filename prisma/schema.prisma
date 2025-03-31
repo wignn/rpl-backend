@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider      = "prisma-client-js"
   binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
@@ -14,122 +8,117 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model user {
+model User {
   id_user    String    @id @default(cuid())
-  tenant     Tenant?
-  name     String
+  name       String
   password   String
   role       ROLE
   phone      String    @unique
   deleted    Boolean   @default(false)
   created_at DateTime  @default(now())
   updated_at DateTime  @updatedAt
-  finance    finance[]
+
+  tenants    Tenant[]
+  finances   Finance[]
 }
 
 model Tenant {
-  id_tenant     String          @id @default(cuid())
-  report        Report[]
-  rent_data     Rent_Data?
-  id_user       String?         @unique
-  user          user?           @relation(fields: [id_user], references: [id_user])
-  full_name     String
-  address       String
-  no_ktp        String
-  status        STATUS
-  no_telp       String
-  deleted       Boolean         @default(false)
-  created_at    DateTime        @default(now())
-  updated_at    DateTime        @updatedAt
-  managepayment Managepayment[]
+  id_tenant  String    @id @default(cuid())
+  userId     String
+  full_name  String
+  address    String
+  no_ktp     String
+  status     STATUS
+  no_telp    String
+  deleted    Boolean   @default(false)
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+
+  user       User      @relation(fields: [userId], references: [id_user])
+  rentData   RentData?
+  reports    Report[]
+  finances   Finance[]
 }
 
-model Rent_Data {
+model RentData {
   id_rent    String    @id @default(cuid())
-  id_tenant  String?   @unique
-  tenant     Tenant?   @relation(fields: [id_tenant], references: [id_tenant])
-  id_room    String
-  room       Room      @relation(fields: [id_room], references: [id_room])
+  tenantId   String    @unique
+  roomId     String
   rent_date  DateTime
   rent_out   DateTime?
   deleted    Boolean   @default(false)
   created_at DateTime  @default(now())
   updated_at DateTime  @updatedAt
-  finance    finance[]
+  tenant     Tenant    @relation(fields: [tenantId], references: [id_tenant])
+  room       Room      @relation(fields: [roomId], references: [id_room])
+  finances   Finance[]
 }
 
 model Room {
   id_room     String      @id @default(cuid())
-  id_roomtype String      @unique
-  roomtype    RoomType    @relation(fields: [id_roomtype], references: [id_roomtype])
+  id_roomtype  String
   status      ROOMSTATUS
-  Rent_Data   Rent_Data[]
   deleted     Boolean     @default(false)
   created_at  DateTime    @default(now())
   updated_at  DateTime    @updatedAt
-  finance     finance[]
+
+  roomType    RoomType    @relation(fields: [id_roomtype], references: [id_roomtype])
+  rentData    RentData[]
 }
 
 model RoomType {
   id_roomtype String   @id @default(cuid())
-  room        Room?
   room_type   String
   price       Int
   deleted     Boolean  @default(false)
   created_at  DateTime @default(now())
   updated_at  DateTime @updatedAt
+
+  rooms       Room[]
 }
 
 model Report {
-  id_report     String       @id @default(cuid())
-  id_tenant     String
-  tenant        Tenant?      @relation(fields: [id_tenant], references: [id_tenant])
-  id_facility   String
-  facility      Facility?    @relation(fields: [id_facility], references: [id_facility])
-  report_desc   String
-  report_date   DateTime
-  report_status REPORTSTATUS
-  deleted       Boolean      @default(false)
-  created_at    DateTime     @default(now())
-  updated_at    DateTime     @updatedAt
+  id_report   String       @id @default(cuid())
+  tenantId    String
+  facilityId  String
+  report_desc String
+  report_date DateTime
+  status      REPORTSTATUS
+  deleted     Boolean      @default(false)
+  created_at  DateTime     @default(now())
+  updated_at  DateTime     @updatedAt
+
+  tenant      Tenant       @relation(fields: [tenantId], references: [id_tenant])
+  facility    Facility     @relation(fields: [facilityId], references: [id_facility])
 }
 
 model Facility {
   id_facility   String   @id @default(cuid())
   facility_name String
   desc          String
-  report        Report[]
   deleted       Boolean  @default(false)
   created_at    DateTime @default(now())
   updated_at    DateTime @updatedAt
+
+  reports       Report[]
 }
 
-model Managepayment {
-  id_mg        String   @id @default(cuid())
-  id_tenant    String
-  tenant       Tenant?  @relation(fields: [id_tenant], references: [id_tenant])
-  type         TYPE
-  payment_date DateTime
-  deleted      Boolean  @default(false)
-  created_at   DateTime @default(now())
-  updated_at   DateTime @updatedAt
-}
-
-model finance {
-  id_finance   String     @id @default(cuid())
-  id_rent      String
-  rent_data    Rent_Data? @relation(fields: [id_rent], references: [id_rent])
-  id_user      String
-  user         user?      @relation(fields: [id_user], references: [id_user])
-  id_room      String
-  room         Room?      @relation(fields: [id_room], references: [id_room])
+model Finance {
+  id_finance   String    @id @default(cuid())
+  tenantId     String?
+  rentId       String?
+  userId       String?
   type         INOUT
   category     String
   amount       Int
   payment_date DateTime
-  deleted      Boolean    @default(false)
-  created_at   DateTime   @default(now())
-  updated_at   DateTime   @updatedAt
+  deleted      Boolean   @default(false)
+  created_at   DateTime  @default(now())
+  updated_at   DateTime  @updatedAt
+
+  tenant       Tenant?   @relation(fields: [tenantId], references: [id_tenant])
+  rentData     RentData? @relation(fields: [rentId], references: [id_rent])
+  user         User?     @relation(fields: [userId], references: [id_user])
 }
 
 enum STATUS {
@@ -150,11 +139,6 @@ enum ROOMSTATUS {
 enum REPORTSTATUS {
   PENDING
   SUCCESS
-}
-
-enum TYPE {
-  SUDAH
-  BELUM
 }
 
 enum INOUT {

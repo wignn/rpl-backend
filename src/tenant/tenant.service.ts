@@ -23,10 +23,8 @@ export class TenantService {
       request,
     );
 
-    const isUserExist = await this.prismaService.tenant.count({
-      where: {
-        no_telp: tenantRequest.no_telp,
-      },
+    const isUserExist = await this.prismaService.user.count({
+      where: { phone: tenantRequest.no_telp },
     });
 
     if (isUserExist > 0) {
@@ -46,19 +44,19 @@ export class TenantService {
 
     const tenant = await this.prismaService.tenant.create({
       data: {
+        userId: user.id_user,
         address: tenantRequest.address,
         no_ktp: tenantRequest.no_ktp,
         status: tenantRequest.status,
         no_telp: tenantRequest.no_telp,
         full_name: tenantRequest.full_name,
-        id_user: user.id_user,
       },
     });
 
-    const roomData = await this.prismaService.rent_Data.create({
+    const roomData = await this.prismaService.rentData.create({
       data: {
-        id_tenant: tenant.id_tenant,
-        id_room: tenantRequest.id_room,
+        tenantId: tenant.id_tenant,
+        roomId: tenantRequest.id_room,
         rent_date: tenantRequest.rent_in,
       },
     });
@@ -79,8 +77,8 @@ export class TenantService {
       },
       roomData: {
         id_rent: roomData.id_rent,
-        id_tenant: roomData.id_tenant,
-        id_room: roomData.id_room,
+        id_tenant: roomData.tenantId,
+        id_room: roomData.roomId,
         rent_date: roomData.rent_date,
       },
     };
@@ -93,11 +91,11 @@ export class TenantService {
       where: { deleted: false },
       include: {
         user: true,
-        rent_data: {
+        rentData: {
           include: {
             room: {
               include: {
-                roomtype: true,
+                roomType: true,
               },
             },
           },
@@ -112,13 +110,13 @@ export class TenantService {
       status: tenant.status,
       no_telp: tenant.no_telp,
       full_name: tenant.full_name,
-      room: tenant.rent_data
+      room: tenant.rentData
         ? {
-            id_room: tenant.rent_data.id_room,
-            room_name: tenant.rent_data.room?.roomtype?.room_type ?? null,
-            rent_in: tenant.rent_data.rent_date,
-            rent_out: tenant.rent_data.rent_out,
-            status: tenant.rent_data.room?.status ?? null,
+            id_room: tenant.rentData.roomId,
+            room_name: tenant.rentData.room?.roomType?.room_type ?? null,
+            rent_in: tenant.rentData.rent_date,
+            rent_out: tenant.rentData.rent_out,
+            status: tenant.rentData.room?.status ?? null,
           }
         : null,
     }));

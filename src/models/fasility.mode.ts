@@ -1,6 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger";
+import { ROOMSTATUS } from "@prisma/client";
 
-export class FasilityCreateRequest {
+export class    FacilityCreateRequest {
     @ApiProperty({
         example: 'sdanknm3wmnkns',
         required: true,
@@ -15,7 +16,7 @@ export class FasilityCreateRequest {
     desc: string;
 
 }
-export class FasilityCreateResponse extends FasilityCreateRequest {
+export class FacilityCreateResponse extends FacilityCreateRequest {
     @ApiProperty({
         example: 'sdanknm3wmnkns',
         required: true,
@@ -35,7 +36,17 @@ export class FasilityCreateResponse extends FasilityCreateRequest {
     })
     updated_at: Date;
 }
-export class FasilityDetails extends FasilityCreateResponse {
-
-
+export class FacilityUpdateRequest {
+    @ApiProperty({
+        example: 'sdanknm3wmnkns',
+        required: true,
+    })
+    id_fasility?: string;
+    
+    @ApiProperty({
+        example: 'Available',
+        required: true,
+    })
+    status?: ROOMSTATUS;
 }
+
