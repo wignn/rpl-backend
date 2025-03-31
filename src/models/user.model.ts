@@ -1,7 +1,7 @@
 import { ROLE } from '@prisma/client';
 import { ApiProperty } from '@nestjs/swagger';
 
-export class LoginUserRequest {
+export class UserLoginRequest {
   @ApiProperty({
     example: 'wign',
     required: true,
@@ -14,7 +14,7 @@ export class LoginUserRequest {
   })
   password: string;
 }
-class backendTokens {
+class BackendTokens {
   @ApiProperty({
     example: 'backendTokens with access tokens',
     required: true,
@@ -28,7 +28,7 @@ class backendTokens {
   refreshToken: string;
 }
 
-export class LoginUserResponse {
+export class UserLoginResponse {
   @ApiProperty({
     example: 'pqiwoqkmwknq',
     required: true,
@@ -48,13 +48,15 @@ export class LoginUserResponse {
   role: ROLE;
 
   @ApiProperty({
-    example: 'backendTokens with access and refresh tokens',
+    example: `{ 
+    "accessTokens:"randomJwtToken",
+    "RefreshTokens":"randmonRefreshTokens" }`,
     required: false,
   })
-  backendTokens: backendTokens;
+  backendTokens: BackendTokens;
 }
 
-export class userResponse {
+export class UserDetailResponse {
   @ApiProperty({
     example: 'wign',
     required: false,
@@ -91,4 +93,30 @@ export class userResponse {
     required: false,
   })
   updated_at: Date;
+}
+
+export class UserUpdateRequest {
+  @ApiProperty({
+    example: 'wign',
+    required: false,
+  })
+  name?: string;
+
+  @ApiProperty({
+    example: 'randompassword',
+    required: false,
+  })
+  password?: string;
+
+  @ApiProperty({
+    example: 'TENANT',
+    required: false,
+  })
+  role?: ROLE;
+
+  @ApiProperty({
+    example: '08123456789',
+    required: false,
+  })
+  phone?: string;
 }

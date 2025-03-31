@@ -9,9 +9,10 @@ import { FilesModule } from './files/files.module';
 import { RoomService } from './room/room.service';
 import { RoomModule } from './room/room.module';
 import { UsersModule } from './users/users.module';
+import { FasilityModule } from './fasility/fasility.module';
 
 @Module({
-  imports: [CommonModule, TenantModule, FilesModule, RoomModule, UsersModule],
+  imports: [CommonModule, TenantModule, FilesModule, RoomModule, UsersModule, FasilityModule],
   controllers: [AppController],
   providers: [AppService, RoomService],
 })

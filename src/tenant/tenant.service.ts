@@ -3,21 +3,22 @@ import { HttpException, Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { PrismaService } from 'src/common/prisma.service';
-import { CreateTenantRequest, CreateTenantResponse } from 'src/models/tenant.model';
+import { TenantCreateRequest, TenantCreateResponse } from 'src/models/tenant.model';
 import { TenantValidation } from './tenat.validation';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class TenantService {
   constructor(
-    private ValidationService: ValidationService,
+    private validationService: ValidationService,
     @Inject(WINSTON_MODULE_PROVIDER) private logger: Logger,
     private prismaService: PrismaService,
   ) {}
 
-  async createNewTenant(request: CreateTenantRequest): Promise<CreateTenantResponse> {
+  async create(request: TenantCreateRequest): Promise<TenantCreateResponse> {
     this.logger.info(`Creating new tenant`);
-    const tenantRequest: CreateTenantRequest = this.ValidationService.validate(
+
+    const tenantRequest: TenantCreateRequest = this.validationService.validate(
       TenantValidation.create,
       request,
     );
@@ -29,16 +30,16 @@ export class TenantService {
     });
 
     if (isUserExist > 0) {
-      new HttpException('User already exist', 400);
+      throw new HttpException('User already exists', 400);
     }
 
-    const hashpassword = await bcrypt.hash(tenantRequest.no_telp, 10);
+    const hashPassword = await bcrypt.hash(tenantRequest.no_telp, 10);
 
     const user = await this.prismaService.user.create({
       data: {
         phone: tenantRequest.no_telp,
-        username: tenantRequest.full_name,
-        password: hashpassword,
+        name: tenantRequest.full_name,
+        password: hashPassword,
         role: 'TENANT',
       },
     });
@@ -65,7 +66,7 @@ export class TenantService {
     return {
       user: {
         id_user: user.id_user,
-        username: user.username,
+        name: user.name,
         role: user.role,
       },
       tenant: {
@@ -81,49 +82,45 @@ export class TenantService {
         id_tenant: roomData.id_tenant,
         id_room: roomData.id_room,
         rent_date: roomData.rent_date,
-      }
-    }
+      },
+    };
   }
 
+  async findAll(): Promise<any> {
+    this.logger.info('Fetching all tenants');
 
-  async getAllTenant(): Promise<any> {
-    this.logger.info('Get all tenant');
     const data = await this.prismaService.tenant.findMany({
-      where: {
-        deleted: false
-      },
+      where: { deleted: false },
       include: {
         user: true,
         rent_data: {
           include: {
             room: {
               include: {
-                roomtype: true
-              }
-            }
+                roomtype: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    return data.map((tenant) => ({
+      id_tenant: tenant.id_tenant,
+      address: tenant.address,
+      no_ktp: tenant.no_ktp,
+      status: tenant.status,
+      no_telp: tenant.no_telp,
+      full_name: tenant.full_name,
+      room: tenant.rent_data
+        ? {
+            id_room: tenant.rent_data.id_room,
+            room_name: tenant.rent_data.room?.roomtype?.room_type ?? null,
+            rent_in: tenant.rent_data.rent_date,
+            rent_out: tenant.rent_data.rent_out,
+            status: tenant.rent_data.room?.status ?? null,
           }
-        }
-      }
-    })
-
-    const tenant = data.map((tenant) => {
-      return {
-        id_tenant: tenant.id_tenant,
-        address: tenant.address,
-        no_ktp: tenant.no_ktp,
-        status: tenant.status,
-        no_telp: tenant.no_telp,
-        full_name: tenant.full_name,
-        room : {
-          id_room: tenant.rent_data?.id_room,
-          room_name: tenant.rent_data?.room.roomtype.room_type,
-          rent_in: tenant.rent_data?.rent_date,
-          rent_out: tenant.rent_data?.rent_out,
-          status: tenant.rent_data?.room.status,
-        }
-      }
-    })
-
-    return tenant;
+        : null,
+    }));
   }
 }

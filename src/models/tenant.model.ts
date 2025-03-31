@@ -1,21 +1,17 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { ROLE, STATUS } from "@prisma/client";
 
-
-
-
-export class CreateTenantRequest {
-
+export class TenantCreateRequest {
     @ApiProperty({
         example: '2311400000000004',
-        description: 'Name of the tenant',
+        description: 'KTP number of the tenant',
         required: true,
     })
     no_ktp: string;
 
     @ApiProperty({
         example: 'M. Iqbal',
-        description: 'Name of the tenant',
+        description: 'Full name of the tenant',
         required: true,
     })
     full_name: string;
@@ -29,7 +25,7 @@ export class CreateTenantRequest {
 
     @ApiProperty({
         example: 'MARRIED',
-        description: 'Type of tenant',
+        description: 'Marital status of the tenant',
         required: true,
     })
     status: STATUS;
@@ -42,32 +38,33 @@ export class CreateTenantRequest {
     rent_in: string;
 
     @ApiProperty({
-        example: '2021-08-22',
-        description: 'Date when the tenant moved in',
+        example: '08123456789',
+        description: 'Phone number of the tenant',
         required: true,
     })
-    no_telp : string;
+    no_telp: string;
 
     @ApiProperty({
-        example: '2021-08-22',
-        description: 'Date when the tenant moved in',
+        example: 'R001',
+        description: 'Room ID assigned to the tenant',
         required: true,
     })
-    id_room : string;
+    id_room: string;
 }
-class UserResponse {
-    @ApiProperty({ example: 1 })
+
+class TenantUserResponse {
+    @ApiProperty({ example: '1' })
     id_user: string;
 
     @ApiProperty({ example: "M. Iqbal" })
-    username: string;
+    name: string;
 
     @ApiProperty({ example: "TENANT" })
-    role: string;
+    role: ROLE;
 }
 
 class TenantResponse {
-    @ApiProperty({ example: 1 })
+    @ApiProperty({ example: '1' })
     id_tenant: string;
 
     @ApiProperty({ example: "Jl. Kaliurang No. 10" })
@@ -86,12 +83,12 @@ class TenantResponse {
     full_name: string;
 }
 
-class RoomDataResponse {
-    @ApiProperty({ example: 1 })
+class TenantRoomResponse {
+    @ApiProperty({ example: '1' })
     id_rent: string;
 
-    @ApiProperty({ example: 1 })
-    id_tenant: string | null
+    @ApiProperty({ example: '1', nullable: true })
+    id_tenant: string | null;
 
     @ApiProperty({ example: "R001" })
     id_room: string;
@@ -100,13 +97,13 @@ class RoomDataResponse {
     rent_date: Date;
 }
 
-export class CreateTenantResponse {
-    @ApiProperty({ type: UserResponse })
-    user: UserResponse;
+export class TenantCreateResponse {
+    @ApiProperty({ type: TenantUserResponse })
+    user: TenantUserResponse;
 
     @ApiProperty({ type: TenantResponse })
     tenant: TenantResponse;
 
-    @ApiProperty({ type: RoomDataResponse })
-    roomData: RoomDataResponse;
+    @ApiProperty({ type: TenantRoomResponse })
+    roomData: TenantRoomResponse;
 }

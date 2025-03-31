@@ -9,11 +9,13 @@ import {
 } from '@nestjs/common';
 import { RoomService } from './room.service';
 import {
-  CreateRoomRequest,
-  CreateRoomResponse,
-  GetResponse,
+  RoomCreateRequest,
+  RoomCreateResponse,
+  RoomResponse,
+  RoomDetailResponse,
 } from 'src/models/room.model';
 import { ApiResponse } from '@nestjs/swagger';
+import { DeleteResponse } from 'src/models/common.model';
 
 @Controller('room')
 export class RoomController {
@@ -24,7 +26,7 @@ export class RoomController {
   @ApiResponse({
     status: 200,
     description: 'Room created successfully',
-    type: CreateRoomResponse,
+    type: RoomCreateResponse,
   })
   @ApiResponse({
     status: 400,
@@ -35,41 +37,41 @@ export class RoomController {
     description: 'RoomType not exist',
   })
   async createRoom(
-    @Body() request: CreateRoomRequest,
-  ): Promise<CreateRoomResponse> {
+    @Body() request: RoomCreateRequest,
+  ): Promise<RoomCreateResponse> {
     return this.roomservice.create(request);
   }
 
   @ApiResponse({
     status: 200,
     description: 'Room successfully found',
-    type: GetResponse,
+    type: RoomResponse,
   })
   @Get()
   @HttpCode(200)
-  async findAll(): Promise<GetResponse[]> {
+  async findAll(): Promise<RoomDetailResponse[]> {
     return this.roomservice.findAll();
   }
 
   @ApiResponse({
     status: 200,
     description: 'Room successfully found',
-    type: GetResponse,
+    type: RoomResponse,
   })
   @Get(':id')
   @HttpCode(200)
-  async findOne(@Param('id') id: string): Promise<GetResponse> {
+  async findOne(@Param('id') id: string): Promise<RoomDetailResponse> {
     return this.roomservice.findOne(id);
   }
 
   @ApiResponse({
     status: 200,
     description: 'Room successfully deleted',
-    type: "room created successfully",
+    type: DeleteResponse
   })
   @Delete(':id')
   @HttpCode(200)
-  async delete(@Param('id') id: string): Promise<string> {
+  async delete(@Param('id') id: string): Promise<DeleteResponse> {
     return this.roomservice.delete(id);
   }
 }

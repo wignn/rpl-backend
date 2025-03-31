@@ -1,11 +1,12 @@
 import { HttpException, Inject, Injectable } from '@nestjs/common';
 import { ValidationService } from 'src/common/validate.service';
-import { LoginUserRequest, userResponse } from 'src/models/user.model';
+import { UserLoginRequest, UserDetailResponse, UserLoginResponse } from 'src/models/user.model';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { PrismaService } from 'src/common/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
+import { DeleteResponse } from 'src/models/common.model';
 
 @Injectable()
 export class UsersService {
@@ -16,7 +17,7 @@ export class UsersService {
     private jwtService: JwtService,
   ) {}
 
-  async signIn(request: LoginUserRequest): Promise<any> {
+  async signIn(request: UserLoginRequest): Promise<UserLoginResponse> {
     this.logger.info(`Signing in user`);
 
     const user = await this.prismaService.user.findUnique({
@@ -35,17 +36,17 @@ export class UsersService {
     }
 
     const payload = {
-      username: user.username,
+      username: user.name,
       isAdmin: user.role,
       sub: {
-        name: user.username,
+        name: user.name,
       },
     };
 
     return {
       id: user.id_user,
-      username: user.username,
-      isAdmin: user.role,
+      username: user.name,
+      role: user.role,
       backendTokens: {
         accessToken: await this.jwtService.signAsync(payload, {
           expiresIn: '1h',
@@ -59,7 +60,7 @@ export class UsersService {
     };
   }
 
-  async findAll(): Promise<userResponse[]> {
+  async findAll(): Promise<UserDetailResponse[]> {
     this.logger.info(`Finding all users`);
 
     const users = await this.prismaService.user.findMany({
@@ -76,7 +77,7 @@ export class UsersService {
     }));
   }
 
-  async findOne(id: string): Promise<userResponse> {
+  async findOne(id: string): Promise<UserDetailResponse> {
     const user = await this.prismaService.user.findUnique({
       where: {
         id_user: id,
@@ -97,11 +98,34 @@ export class UsersService {
     };
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+  async delete(id: string): Promise<DeleteResponse> {
+    this.logger.info(`Deleting user with id ${id}`);
+
+    const user = this.prismaService.user.findUnique({
+      where: {
+        id_user: id,
+      },
+    });
+    if (!user) {
+      throw new HttpException('User not found', 404);
+    }
+
+    await this.prismaService.user.update({
+      where: {
+        id_user: id,
+      },
+      data: {
+        deleted: true,
+      },
+    });
+
+
+    return {
+      message:"delete success",
+    }
   }
 
-  async update(id: string, request): Promise<userResponse> {
+  async update(id: string, request): Promise<UserDetailResponse> {
     this.logger.info(`Updating user`);
 
     const user = await this.prismaService.user.findUnique({
@@ -109,9 +133,8 @@ export class UsersService {
         id_user: id,
       },
     });
-
     if (!user) {
-      throw new HttpException('Internal server error', 500);
+      throw new HttpException('User not found', 404);
     }
 
     const updateUser = await this.prismaService.user.update({
@@ -125,7 +148,7 @@ export class UsersService {
       id: updateUser.id_user,
       phone: updateUser.phone,
       name: updateUser.id_user,
-      role: updateUser.role as any,
+      role: updateUser.role,
       created_at: updateUser.created_at,
       updated_at: updateUser.updated_at,
     };

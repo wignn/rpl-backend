@@ -1,8 +1,8 @@
 import { Body, Controller, HttpCode, Post } from '@nestjs/common';
 import { TenantService } from './tenant.service';
 import {
-  CreateTenantRequest,
-  CreateTenantResponse,
+  TenantCreateRequest,
+  TenantCreateResponse,
 } from 'src/models/tenant.model';
 import { ApiResponse } from '@nestjs/swagger';
 
@@ -10,16 +10,27 @@ import { ApiResponse } from '@nestjs/swagger';
 export class TenantController {
   constructor(private tenantservice: TenantService) {}
 
+
+  @Post()
+  @HttpCode(200)
   @ApiResponse({
     status: 200,
     description: 'Tenant created successfully',
-    type: CreateTenantResponse,
+    type: TenantCreateResponse
   })
-  @Post()
-  @HttpCode(200)
-  async createTenant(
-    @Body() request: CreateTenantRequest,
-  ): Promise<CreateTenantResponse> {
-    return this.tenantservice.createNewTenant(request);
+  async create(
+    @Body() request: TenantCreateRequest,
+  ): Promise<TenantCreateResponse> {
+    return this.tenantservice.create(request);
+  }
+
+
+  @ApiResponse({
+    status: 200,
+    description: 'Tenant retrieved successfully',
+    type: TenantCreateResponse
+  })
+  async findAll(): Promise<any> {
+    return this.tenantservice.findAll();
   }
 }
