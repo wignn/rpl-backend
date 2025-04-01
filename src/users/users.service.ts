@@ -71,7 +71,7 @@ export class UsersService {
       id: user.id_user,
       phone: user.phone,
       name: user.id_user,
-      role: user.role as any,
+      role: user.role,
       created_at: user.created_at,
       updated_at: user.updated_at,
     }));

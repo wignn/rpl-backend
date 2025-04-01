@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
-import { FasilityController } from './fasility.controller';
-import { FasilityService } from './fasility.service';
+import { FasilityController } from './facility.controller';
+import { FasilityService } from './facility.service';
 import { JwtService } from '@nestjs/jwt';
 
 @Module({

@@ -6,10 +6,13 @@ import {
   RoomCreateRequest,
   RoomCreateResponse,
   RoomDetailResponse,
+  RoomTypeCreateRequest,
+  RoomTypeResponse,
+  RoomTypeUpdateRequest,
   RoomUpdateRequest,
 } from 'src/models/room.model';
 import { Logger } from 'winston';
-import { RoomValidation } from './room.validation';
+import { RoomtypeValidation, RoomValidation } from './room.validation';
 import { DeleteResponse } from 'src/models/common.model';
 
 @Injectable()
@@ -37,14 +40,14 @@ export class RoomService {
 
     const room = await this.prisma.room.create({
       data: {
-        roomtypeId: roomRequest.id_roomtype,
+        id_roomtype: roomRequest.id_roomtype,
         status: roomRequest.status,
       },
     });
 
     return {
       id_room: room.id_room,
-      id_roomtype: room.roomtypeId,
+      id_roomtype: room.id_roomtype,
       status: room.status,
       created_at: room.created_at,
       updated_at: room.updated_at,
@@ -59,7 +62,7 @@ export class RoomService {
     });
     return rooms.map((room) => ({
       id_room: room.id_room,
-      id_roomtype: room.roomtypeId,
+      id_roomtype: room.id_roomtype,
       status: room.status,
       created_at: room.created_at,
       updated_at: room.updated_at,
@@ -83,7 +86,7 @@ export class RoomService {
     }
     return {
       id_room: room.id_room,
-      id_roomtype: room.roomtypeId,
+      id_roomtype: room.id_roomtype,
       status: room.status,
       created_at: room.created_at,
       updated_at: room.updated_at,
@@ -96,7 +99,10 @@ export class RoomService {
     };
   }
 
-  async update(id: string, request: RoomUpdateRequest): Promise<RoomCreateResponse> {
+  async update(
+    id: string,
+    request: RoomUpdateRequest,
+  ): Promise<RoomCreateResponse> {
     this.logger.info(`Updating room with id ${id}`);
     const roomRequest: RoomUpdateRequest = this.validationService.validate(
       RoomValidation.UPDATE,
@@ -126,7 +132,7 @@ export class RoomService {
 
     return {
       id_room: room.id_room,
-      id_roomtype: room.roomtypeId,
+      id_roomtype: room.id_roomtype,
       status: room.status,
       created_at: room.created_at,
       updated_at: room.updated_at,
@@ -146,6 +152,111 @@ export class RoomService {
 
     await this.prisma.room.update({
       where: { id_room: id },
+      data: { deleted: true },
+    });
+
+    return { message: 'Deleted successfully' };
+  }
+
+  //roomtype
+
+  async createRoomType(
+    request: RoomTypeCreateRequest,
+  ): Promise<RoomTypeResponse> {
+    this.logger.info(`Creating new room type`);
+    const roomRequest: RoomTypeCreateRequest = this.validationService.validate(
+      RoomtypeValidation.CREATE,
+      request,
+    );
+
+    const roomType = await this.prisma.roomType.create({
+      data: roomRequest,
+    });
+
+    return {
+      id_roomtype: roomType.id_roomtype,
+      room_type: roomType.room_type,
+      price: roomType.price,
+      created_at: roomType.created_at,
+      updated_at: roomType.updated_at,
+    };
+  }
+
+  async findAllRoomType(): Promise<RoomTypeResponse[]> {
+    this.logger.info(`Finding all room types`);
+    const roomTypes = await this.prisma.roomType.findMany({
+      where: { deleted: false },
+    });
+    return roomTypes.map((roomType) => ({
+      id_roomtype: roomType.id_roomtype,
+      room_type: roomType.room_type,
+      price: roomType.price,
+      created_at: roomType.created_at,
+      updated_at: roomType.updated_at,
+    }));
+  }
+
+  async findOneRoomType(id: string): Promise<RoomTypeResponse> {
+    this.logger.info(`Finding room type with id ${id}`);
+    const roomType = await this.prisma.roomType.findUnique({
+      where: { id_roomtype: id, deleted: false },
+    });
+    if (!roomType) {
+      throw new HttpException('Room Type not found', 404);
+    }
+    return {
+      id_roomtype: roomType.id_roomtype,
+      room_type: roomType.room_type,
+      price: roomType.price,
+      created_at: roomType.created_at,
+      updated_at: roomType.updated_at,
+    };
+  }
+
+  async updateRoomType(
+    id: string,
+    request: RoomTypeUpdateRequest,
+  ): Promise<RoomTypeResponse> {
+    this.logger.info(`Updating room type with id ${id}`);
+    const roomRequest: RoomTypeUpdateRequest = this.validationService.validate(
+      RoomtypeValidation.UPDATE,
+      request,
+    );
+
+    const existingRoomType = await this.prisma.roomType.count({
+      where: { id_roomtype: id, deleted: false },
+    });
+    if (existingRoomType === 0) {
+      throw new HttpException('Room Type not found', 404);
+    }
+
+    const roomType = await this.prisma.roomType.update({
+      where: { id_roomtype: id },
+      data: roomRequest,
+    });
+
+    return {
+      id_roomtype: roomType.id_roomtype,
+      room_type: roomType.room_type,
+      price: roomType.price,
+      created_at: roomType.created_at,
+      updated_at: roomType.updated_at,
+    };
+  }
+
+
+  async deleteRoomType(id: string): Promise<DeleteResponse> {
+    this.logger.info(`Deleting room type with id ${id}`);
+
+    const roomType = await this.prisma.roomType.findUnique({
+      where: { id_roomtype: id, deleted: false },
+    });
+    if (!roomType) {
+      throw new HttpException('Room Type not found', 404);
+    }
+
+    await this.prisma.roomType.update({
+      where: { id_roomtype: id },
       data: { deleted: true },
     });
 

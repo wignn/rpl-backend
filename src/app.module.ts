@@ -9,10 +9,12 @@ import { FilesModule } from './files/files.module';
 import { RoomService } from './room/room.service';
 import { RoomModule } from './room/room.module';
 import { UsersModule } from './users/users.module';
-import { FasilityModule } from './fasility/fasility.module';
+import { FasilityModule } from './facility/facility.module';
+import { ReportModule } from './report/report.module';
+import { FinanceModule } from './finance/finance.module';
 
 @Module({
-  imports: [CommonModule, TenantModule, FilesModule, RoomModule, UsersModule, FasilityModule],
+  imports: [CommonModule, TenantModule, FilesModule, RoomModule, UsersModule, FasilityModule, ReportModule, FinanceModule],
   controllers: [AppController],
   providers: [AppService, RoomService],
 })

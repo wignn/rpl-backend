@@ -84,3 +84,50 @@ export class RoomDetailResponse extends RoomResponse {
 }
 
 
+export class RoomTypeCreateRequest {
+    @ApiProperty({
+        example: 'Deluxe',
+        required: true,
+    })
+    room_type: string;
+    
+    @ApiProperty({
+        example: 2000000,
+        required: true,
+    })
+    price: number;
+}
+
+export class RoomTypeUpdateRequest {
+    @ApiProperty({
+        example: 'Deluxe',
+        required: true,
+    })
+    room_type?: string;
+    
+    @ApiProperty({
+        example: 2000000,
+        required: true,
+    })
+    price?: number;
+}
+
+export class RoomTypeResponse extends RoomTypeCreateRequest {
+    @ApiProperty({
+        example: 'sdanknm3wmnkns',
+        required: true,
+    })
+    id_roomtype: string;
+
+    @ApiProperty({
+        example: '2021-08-22',
+        required: true,
+    })
+    created_at: Date;
+
+    @ApiProperty({
+        example: '2021-08-22',
+        required: true,
+    })
+    updated_at: Date;
+}

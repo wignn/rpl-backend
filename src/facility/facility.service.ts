@@ -6,9 +6,9 @@ import {
     FacilityUpdateRequest,
   FacilityCreateRequest,
   FacilityCreateResponse,
-} from 'src/models/fasility.mode';
+} from 'src/models/facility.mode';
 import { Logger } from 'winston';
-import { FasilityValidation } from './fasility.validation';
+import { FasilityValidation } from './facility.validation';
 
 @Injectable()
 export class FasilityService {
