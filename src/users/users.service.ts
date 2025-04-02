@@ -1,18 +1,12 @@
-import { user } from './../../node_modules/.prisma/client/index.d';
 import { HttpException, Inject, Injectable } from '@nestjs/common';
 import { ValidationService } from 'src/common/validate.service';
-import {
-  FindOneResponse,
-  LoginUserRequest,
-  RegisterUserRequest,
-  RegisterUserResponse,
-} from 'src/models/user.model';
+import { UserLoginRequest, UserDetailResponse, UserLoginResponse } from 'src/models/user.model';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { PrismaService } from 'src/common/prisma.service';
-import { UserValidation } from './user.validation';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
+import { DeleteResponse } from 'src/models/common.model';
 
 @Injectable()
 export class UsersService {
@@ -23,12 +17,12 @@ export class UsersService {
     private jwtService: JwtService,
   ) {}
 
-  async signIn(request: LoginUserRequest): Promise<any> {
+  async signIn(request: UserLoginRequest): Promise<UserLoginResponse> {
     this.logger.info(`Signing in user`);
 
     const user = await this.prismaService.user.findUnique({
       where: {
-        email: request.email,
+        phone: request.phone,
       },
     });
 
@@ -42,17 +36,17 @@ export class UsersService {
     }
 
     const payload = {
-      username: user.username,
+      username: user.name,
       isAdmin: user.role,
       sub: {
-        name: user.username,
+        name: user.name,
       },
     };
 
     return {
       id: user.id_user,
-      username: user.username,
-      isAdmin: user.role,
+      username: user.name,
+      role: user.role,
       backendTokens: {
         accessToken: await this.jwtService.signAsync(payload, {
           expiresIn: '1h',
@@ -66,42 +60,7 @@ export class UsersService {
     };
   }
 
-  async create(request: RegisterUserRequest): Promise<RegisterUserResponse> {
-    this.logger.info(`Creating user `);
-    const registerUserRequest: RegisterUserRequest =
-      this.ValidationService.validate(UserValidation.create, request);
-    const confirm = await this.prismaService.user.findUnique({
-      where: {
-        email: registerUserRequest.email,
-      },
-    });
-    if (confirm) {
-      throw new HttpException('User already exists', 409);
-    }
-
-    if (registerUserRequest.password !== registerUserRequest.confirmPassword) {
-      throw new HttpException('Passwords do not match', 400);
-    }
-
-    const hashPassword = await bcrypt.hash(registerUserRequest.password, 10);
-    const user = await this.prismaService.user.create({
-      data: {
-        email: registerUserRequest.email,
-        password: hashPassword,
-        username: registerUserRequest.username,
-        role: registerUserRequest.role,
-      },
-    });
-
-    return {
-      id_user: user.id_user,
-      email: user.email,
-      username: user.username,
-      role: user.role as any,
-    };
-  }
-
-  async findAll(): Promise<FindOneResponse[]> {
+  async findAll(): Promise<UserDetailResponse[]> {
     this.logger.info(`Finding all users`);
 
     const users = await this.prismaService.user.findMany({
@@ -110,15 +69,15 @@ export class UsersService {
 
     return users.map((user) => ({
       id: user.id_user,
-      email: user.email,
+      phone: user.phone,
       name: user.id_user,
-      role: user.role as any,
-      createdAt: user.createdAt,
-      updatedAt: user.updatedAt,
+      role: user.role,
+      created_at: user.created_at,
+      updated_at: user.updated_at,
     }));
   }
 
-  async findOne(id: string): Promise<FindOneResponse> {
+  async findOne(id: string): Promise<UserDetailResponse> {
     const user = await this.prismaService.user.findUnique({
       where: {
         id_user: id,
@@ -131,19 +90,42 @@ export class UsersService {
 
     return {
       id: user.id_user,
-      email: user.email,
+      phone: user.phone,
       name: user.id_user,
       role: user.role as any,
-      createdAt: user.createdAt,
-      updatedAt: user.updatedAt,
+      created_at: user.created_at,
+      updated_at: user.updated_at,
     };
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+  async delete(id: string): Promise<DeleteResponse> {
+    this.logger.info(`Deleting user with id ${id}`);
+
+    const user = this.prismaService.user.findUnique({
+      where: {
+        id_user: id,
+      },
+    });
+    if (!user) {
+      throw new HttpException('User not found', 404);
+    }
+
+    await this.prismaService.user.update({
+      where: {
+        id_user: id,
+      },
+      data: {
+        deleted: true,
+      },
+    });
+
+
+    return {
+      message:"delete success",
+    }
   }
 
-  async update(id: string, request) {
+  async update(id: string, request): Promise<UserDetailResponse> {
     this.logger.info(`Updating user`);
 
     const user = await this.prismaService.user.findUnique({
@@ -151,9 +133,8 @@ export class UsersService {
         id_user: id,
       },
     });
-
     if (!user) {
-      throw new HttpException('Internal server error', 500);
+      throw new HttpException('User not found', 404);
     }
 
     const updateUser = await this.prismaService.user.update({
@@ -165,11 +146,11 @@ export class UsersService {
 
     return {
       id: updateUser.id_user,
-      email: updateUser.email,
+      phone: updateUser.phone,
       name: updateUser.id_user,
-      role: updateUser.role as any,
-      createdAt: updateUser.createdAt,
-      updatedAt: updateUser.updatedAt,
+      role: updateUser.role,
+      created_at: updateUser.created_at,
+      updated_at: updateUser.updated_at,
     };
   }
 }

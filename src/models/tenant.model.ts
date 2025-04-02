@@ -1,74 +1,109 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { STATUS } from "@prisma/client";
+import { ROLE, STATUS } from "@prisma/client";
 
-
-
-
-export class CreateTenantRequest {
-
+export class TenantCreateRequest {
     @ApiProperty({
         example: '2311400000000004',
-        description: 'Name of the tenant',
+        description: 'KTP number of the tenant',
         required: true,
     })
     no_ktp: string;
 
     @ApiProperty({
-        example: '/path/to/ktp_image',
-        description: 'Path to the image of the tenant\'s KTP',
+        example: 'M. Iqbal',
+        description: 'Full name of the tenant',
         required: true,
     })
-    ktp_image: string;
+    full_name: string;
 
     @ApiProperty({
         example: 'Jl. Kaliurang No. 10',
         description: 'Address of the tenant',
         required: true,
     })
-    addres: string;
+    address: string;
 
     @ApiProperty({
-        example: 'MERRIED',
-        description: 'Type of tenant',
+        example: 'MARRIED',
+        description: 'Marital status of the tenant',
         required: true,
     })
     status: STATUS;
-
 
     @ApiProperty({
         example: '2021-08-22',
         description: 'Date when the tenant moved in',
         required: true,
     })
-    no_telp : string;
+    rent_in: string;
+
+    @ApiProperty({
+        example: '08123456789',
+        description: 'Phone number of the tenant',
+        required: true,
+    })
+    no_telp: string;
+
+    @ApiProperty({
+        example: 'R001',
+        description: 'Room ID assigned to the tenant',
+        required: true,
+    })
+    id_room: string;
 }
 
-export class CreateTenantResponse {
-    @ApiProperty({
-        example: 'pqiwoqkmwknq',
-        description: 'ID of the tenant',
-        required: true,
-    })
+class TenantUserResponse {
+    @ApiProperty({ example: '1' })
+    id_user: string;
+
+    @ApiProperty({ example: "M. Iqbal" })
+    name: string;
+
+    @ApiProperty({ example: "TENANT" })
+    role: ROLE;
+}
+
+class TenantResponse {
+    @ApiProperty({ example: '1' })
     id_tenant: string;
 
-    @ApiProperty({
-        example: 'Jl. Kaliurang No. 10',
-        description: 'Address of the tenant',
-        required: true,
-    })
-    addres: string;
+    @ApiProperty({ example: "Jl. Kaliurang No. 10" })
+    address: string;
 
-    @ApiProperty({
-        example: 'MERRIED',
-        description: 'Type of tenant',
-        required: true,
-    })
+    @ApiProperty({ example: "2311400000000004" })
+    no_ktp: string;
+
+    @ApiProperty({ example: "MARRIED" })
     status: STATUS;
 
-    @ApiProperty({
-        example: '2021-08-22',
-        description: 'Date when the tenant moved in',
-        required: true,
-    })
-    no_telp : string;
+    @ApiProperty({ example: "08123456789" })
+    no_telp: string;
+
+    @ApiProperty({ example: "M. Iqbal" })
+    full_name: string;
+}
+
+class TenantRoomResponse {
+    @ApiProperty({ example: '1' })
+    id_rent: string;
+
+    @ApiProperty({ example: '1', nullable: true })
+    id_tenant: string | null;
+
+    @ApiProperty({ example: "R001" })
+    id_room: string;
+
+    @ApiProperty({ example: "2021-08-22" })
+    rent_date: Date;
+}
+
+export class TenantCreateResponse {
+    @ApiProperty({ type: TenantUserResponse })
+    user: TenantUserResponse;
+
+    @ApiProperty({ type: TenantResponse })
+    tenant: TenantResponse;
+
+    @ApiProperty({ type: TenantRoomResponse })
+    roomData: TenantRoomResponse;
 }

@@ -1,67 +1,62 @@
 import { ROLE } from '@prisma/client';
 import { ApiProperty } from '@nestjs/swagger';
 
-export class RegisterUserRequest {
-  @ApiProperty({
-    example: 'wign',
-    required: false,
-  })
-  username: string;
-
+export class UserLoginRequest {
   @ApiProperty({
     example: 'wign',
     required: true,
   })
-  email: string;
-  
+  phone: string;
+
   @ApiProperty({
     example: 'password',
     required: true,
   })
   password: string;
-
+}
+class BackendTokens {
   @ApiProperty({
-    example: 'password',
+    example: 'backendTokens with access tokens',
     required: true,
   })
-  confirmPassword: string;
+  accessToken: string;
 
   @ApiProperty({
-    example: 'ADMIN',
-    enum: ROLE,
-    required: false,
+    example: 'backendTokens with refresh tokens',
+    required: true,
   })
-  role: ROLE;
+  refreshToken: string;
 }
 
-export class RegisterUserResponse {
+export class UserLoginResponse {
   @ApiProperty({
     example: 'pqiwoqkmwknq',
     required: true,
   })
-  id_user: string;
-  
-  @ApiProperty({
-    example: 'wign',
-    required: false,
-  })
-  username: string;
+  id: string;
 
   @ApiProperty({
     example: 'wign',
     required: true,
   })
-  email: string;
+  username: string;
 
   @ApiProperty({
     example: 'ADMIN',
-    enum: ROLE,
-    required: false,
+    required: true,
   })
   role: ROLE;
+
+  @ApiProperty({
+    example: `{ 
+    "accessTokens:"randomJwtToken",
+    "RefreshTokens":"randmonRefreshTokens" }`,
+    required: false,
+  })
+  backendTokens: BackendTokens;
 }
 
-export class FindOneResponse {
+export class UserDetailResponse {
   @ApiProperty({
     example: 'wign',
     required: false,
@@ -78,7 +73,7 @@ export class FindOneResponse {
     example: 'wign',
     required: true,
   })
-  email: string;
+  phone: string;
 
   @ApiProperty({
     example: 'GUEST',
@@ -91,56 +86,37 @@ export class FindOneResponse {
     example: '2021-08-02T14:00:00.000Z',
     required: true,
   })
-  createdAt: Date;
+  created_at: Date;
 
   @ApiProperty({
     example: '2021-08-02T14:00:00.000Z',
     required: false,
   })
-  updatedAt: Date;
+  updated_at: Date;
 }
 
-
-
-export class LoginUserRequest {
+export class UserUpdateRequest {
   @ApiProperty({
     example: 'wign',
-    required: true,
-  })
-  email: string;
-
-  @ApiProperty({
-    example: 'password',
-    required: true,
-  })
-  password: string;
-}
-
-export class LoginUserResponse {
-  @ApiProperty({
-    example: 'pqiwoqkmwknq',
-    required: true,
-  })
-  id: string;
-
-  @ApiProperty({
-    example: 'wign',
-    required: true,
-  })
-  username: string;
-
-  @ApiProperty({
-    example: 'ADMIN',
-    required: true,
-  })
-  role: ROLE;
-
-  @ApiProperty({
-    example: 'backendTokens with access and refresh tokens',
     required: false,
   })
-  backendTokens: {
-    accessToken: string;
-    refreshToken: string;
-  };
+  name?: string;
+
+  @ApiProperty({
+    example: 'randompassword',
+    required: false,
+  })
+  password?: string;
+
+  @ApiProperty({
+    example: 'TENANT',
+    required: false,
+  })
+  role?: ROLE;
+
+  @ApiProperty({
+    example: '08123456789',
+    required: false,
+  })
+  phone?: string;
 }

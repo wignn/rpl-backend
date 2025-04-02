@@ -12,65 +12,51 @@ import {
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import {
-  FindOneResponse,
-  LoginUserRequest,
-  LoginUserResponse,
-  RegisterUserRequest,
-  RegisterUserResponse,
+  UserLoginRequest,
+UserLoginResponse,
+  UserDetailResponse,
+  UserUpdateRequest,
 } from 'src/models/user.model';
-import { ApiResponse } from '@nestjs/swagger';
+import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { JwtGuard } from 'src/guards/jwt.guard';
+import { DeleteResponse } from 'src/models/common.model';
+import { ErrorResponse } from 'src/models/http-exception.model';
+import { ValidationError } from 'src/models/custom-exception';
 
+@ApiTags('Users')
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
-
-  @Post()
-  @HttpCode(200)
-  @ApiResponse({
-    status: 200,
-    description: 'User successfully created',
-    type: RegisterUserResponse,
-  })
-  @Get(':id')
-  @HttpCode(200)
-  @ApiResponse({
-    status: 409,
-    description: 'User already exists',
-  })
-  @ApiResponse({
-    status: 422,
-    description: 'Passwords do not match',
-  })
-  @ApiResponse({
-    status: 400,
-    description: 'validation error',
-  })
-  create(
-    @Body() createUserDto: RegisterUserRequest,
-  ): Promise<RegisterUserResponse> {
-    return this.usersService.create(createUserDto);
-  }
 
   @Patch()
   @HttpCode(200)
   @ApiResponse({
     status: 200,
     description: 'User successfully logged in',
-    type: LoginUserResponse,
+    type: UserLoginResponse,
   })
-  login(@Body() loginUserDto: LoginUserRequest): Promise<any> {
-    return this.usersService.signIn(loginUserDto);
+  @ApiResponse({
+    status: 400,
+    description: 'Validation error',
+    type: ValidationError,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Email or password is incorrect',
+    type: ErrorResponse,
+  })
+  async login(@Body() request: UserLoginRequest): Promise<UserLoginResponse> {
+    return this.usersService.signIn(request);
   }
 
   @UseGuards(JwtGuard)
   @Get()
   @ApiResponse({
     status: 200,
-    description: 'User successfully found',
-    type: FindOneResponse,
+    description: 'Users successfully retrieved',
+    type: [UserDetailResponse],
   })
-  findAll() {
+  async findAll(): Promise<UserDetailResponse[]> {
     return this.usersService.findAll();
   }
 
@@ -79,21 +65,51 @@ export class UsersController {
   @ApiResponse({
     status: 200,
     description: 'User successfully found',
-    type: FindOneResponse,
+    type: UserDetailResponse,
   })
-  findOne(@Param('id') id: string): Promise<FindOneResponse> {
+  @ApiResponse({
+    status: 404,
+    description: 'User not found',
+    type: ErrorResponse,
+  })
+  async findOne(@Param('id') id: string): Promise<UserDetailResponse> {
     return this.usersService.findOne(id);
   }
 
   @UseGuards(JwtGuard)
   @Put(':id')
-  update(@Param('id') id: string, @Body() updateUserDto) {
-    return this.usersService.update(id, updateUserDto);
+  @HttpCode(200)
+  @ApiResponse({
+    status: 200,
+    description: 'User successfully updated',
+    type: UserDetailResponse,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'User not found',
+    type: ErrorResponse,
+  })
+  async update(
+    @Param('id') id: string,
+    @Body() request: UserUpdateRequest,
+  ): Promise<UserDetailResponse> {
+    return this.usersService.update(id, request);
   }
 
   @UseGuards(JwtGuard)
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.usersService.remove(+id);
+  @HttpCode(200)
+  @ApiResponse({
+    status: 200,
+    description: 'User successfully deleted',
+    type: DeleteResponse,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'User not found',
+    type: ErrorResponse,
+  })
+  async delete(@Param('id') id: string): Promise<DeleteResponse> {
+    return this.usersService.delete(id);
   }
 }
