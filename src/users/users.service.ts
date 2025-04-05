@@ -44,8 +44,8 @@ export class UsersService {
     };
 
     return {
-      id: user.id_user,
-      username: user.name,
+      id_user: user.id_user,
+      name: user.name,
       role: user.role,
       backendTokens: {
         accessToken: await this.jwtService.signAsync(payload, {
@@ -68,7 +68,7 @@ export class UsersService {
     });
 
     return users.map((user) => ({
-      id: user.id_user,
+      id_user: user.id_user,
       phone: user.phone,
       name: user.id_user,
       role: user.role,
@@ -89,7 +89,7 @@ export class UsersService {
     }
 
     return {
-      id: user.id_user,
+      id_user: user.id_user,
       phone: user.phone,
       name: user.id_user,
       role: user.role as any,
@@ -145,7 +145,7 @@ export class UsersService {
     });
 
     return {
-      id: updateUser.id_user,
+      id_user: updateUser.id_user,
       phone: updateUser.phone,
       name: updateUser.id_user,
       role: updateUser.role,
@@ -153,4 +153,29 @@ export class UsersService {
       updated_at: updateUser.updated_at,
     };
   }
+  async refreshToken(user: any): Promise<UserLoginResponse> {
+    const payload = {
+        username: user.username,
+        sub: {
+            name: user.name,
+        },
+    };
+
+    console.log(payload)
+    return {
+        id_user: user.id_user,
+        name: user.name,
+        role: user.isAdmin,
+        backendTokens: {
+            accessToken: await this.jwtService.signAsync(payload, {
+                expiresIn: '1h',
+                privateKey: process.env.JWT_SECRET_KEY,
+            }),
+            refreshToken: await this.jwtService.signAsync(payload, {
+                expiresIn: '7d',
+                privateKey: process.env.JWT_REFRESH_TOKEN,
+            }),
+        },
+    };
+}
 }

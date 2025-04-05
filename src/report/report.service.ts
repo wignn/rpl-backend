@@ -3,7 +3,10 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { PrismaService } from 'src/common/prisma.service';
 import { ValidationService } from 'src/common/validate.service';
 import {
+  PaginatedReportResponse,
+  ReportAllResponse,
   ReportCreateRequest,
+  ReportDetailResponse,
   ReportResponse,
   ReportUpdateRequest,
 } from 'src/models/report.model';
@@ -59,34 +62,93 @@ export class ReportService {
     };
   }
 
-  async findAll(): Promise<ReportResponse[]> {
-    this.logger.info('Finding all reports');
+  
+  async findAll(page: number = 1, limit: number = 10, month: string = 'semua'): Promise<PaginatedReportResponse> {
+    this.logger.info(`Fetching reports - Page: ${page}, Limit: ${limit}, Month: ${month}`);
+  
+    const offset = (page - 1) * limit;
+  
+    const monthMap: Record<string, number> = {
+      januari: 1, februari: 2, maret: 3, april: 4,
+      mei: 5, juni: 6, juli: 7, agustus: 8,
+      september: 9, oktober: 10, november: 11, desember: 12
+  };
+
+    let monthFilter = {}; 
+  
+    if (month.toLowerCase() !== 'semua') {
+      const monthNumber = monthMap[month.toLowerCase()];
+      if (!monthNumber) {
+        throw new Error(`Invalid month name: ${month}`); 
+      }
+  
+      const currentYear = new Date().getFullYear();
+  
+      monthFilter = {
+        created_at: {
+          gte: new Date(`${currentYear}-${monthNumber.toString().padStart(2, '0')}-01T00:00:00.000Z`),
+          lt: new Date(`${currentYear}-${(monthNumber + 1).toString().padStart(2, '0')}-01T00:00:00.000Z`),
+        },
+      };
+    }
+  
+    const totalItems = await this.prismaService.report.count({
+      where: {
+        deleted: false,
+        ...monthFilter,
+      },
+    });
+  
     const reports = await this.prismaService.report.findMany({
       where: {
         deleted: false,
+        ...monthFilter,
       },
-      orderBy: {
-        created_at: 'desc',
+      orderBy: { created_at: 'desc' },
+      skip: offset,
+      take: limit,
+      include: {
+        tenant: { select: { id_tenant: true, full_name: true } },
+        facility: { select: { id_facility: true, facility_name: true } },
       },
     });
-
-    return reports.map((report) => ({
-      id_report: report.id_report,
-      id_tenant: report.id_tenant,
-      id_facility: report.id_facility,
-      report_desc: report.report_desc,
-      report_date: report.report_date,
-      status: report.status,
-      created_at: report.created_at,
-      updated_at: report.updated_at,
+  
+    const reportsWithIndex = reports.map((report, index) => ({
+      ...report,
+      count: offset + index + 1,
     }));
+  
+    return {
+      data: reportsWithIndex,
+      currentPage: page,
+      totalPages: Math.ceil(totalItems / limit),
+      totalItems: totalItems,
+    };
   }
+  
 
-  async findOne(id: string): Promise<ReportResponse> {
+  
+  
+
+  async findOne(id: string): Promise<ReportDetailResponse> {
     this.logger.info(`Finding report with id ${id}`);
     const report = await this.prismaService.report.findUnique({
       where: {
-        id_report: id
+        id_report: id,
+      },
+      include: {
+        tenant: {
+          select: {
+            id_tenant: true,
+            full_name: true,
+          },
+        },
+        facility: {
+          select: {
+            id_facility: true,
+            facility_name: true,
+          },
+        },
       },
     });
 
@@ -101,13 +163,24 @@ export class ReportService {
       report_desc: report.report_desc,
       report_date: report.report_date,
       status: report.status,
+      tenant: {
+        id_tenant: report.tenant.id_tenant,
+        full_name: report.tenant.full_name,
+      },
+      facility: {
+        id_facility: report.facility.id_facility,
+        facility_name: report.facility.facility_name,
+      },
       created_at: report.created_at,
       updated_at: report.updated_at,
     };
   }
 
-  async update(id: string, request: ReportUpdateRequest) :Promise<ReportResponse> {
-    this.logger.info(`Updating report with id ${id}`);
+  async update(
+    id: string,
+    request: ReportUpdateRequest,
+  ): Promise<ReportResponse> {
+    this.logger.info(`Updating report with id ${id}, data: ${JSON.stringify(request)}`);
     const ReportUpdateRequest: ReportUpdateRequest =
       this.validationService.validate(ReportValidation.UPDATE, request);
     const report = await this.prismaService.report.findUnique({
@@ -140,7 +213,7 @@ export class ReportService {
       created_at: updatedReport.created_at,
       updated_at: updatedReport.updated_at,
     };
-  };
+  }
 
   async delete(id: string): Promise<DeleteResponse> {
     this.logger.info(`Deleting report with id ${id}`);

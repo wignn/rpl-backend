@@ -6,7 +6,7 @@ import {
 } from 'src/models/tenant.model';
 import { ApiResponse } from '@nestjs/swagger';
 
-@Controller('tenant')
+@Controller('api/tenant')
 export class TenantController {
   constructor(private tenantservice: TenantService) {}
 

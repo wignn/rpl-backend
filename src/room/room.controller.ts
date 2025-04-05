@@ -19,7 +19,7 @@ import {
 import { ApiResponse } from '@nestjs/swagger';
 import { DeleteResponse } from 'src/models/common.model';
 
-@Controller('room')
+@Controller('api/room')
 export class RoomController {
   constructor(private roomservice: RoomService) {}
 
@@ -77,55 +77,5 @@ export class RoomController {
     return this.roomservice.delete(id);
   }
 
-  //roomtype
-  @Get('roomtype')
-  @HttpCode(200)
-  @ApiResponse({
-    status: 200,
-    description: 'RoomType successfully found',
-    type: RoomResponse,
-  })
-  async findAllRoomType(): Promise<RoomTypeResponse[]> {
-    return this.roomservice.findAllRoomType();
-  }
-
-  @Get('roomtype/:id')
-  @HttpCode(200)
-  @ApiResponse({
-    status: 200,
-    description: 'RoomType successfully found',
-    type: RoomResponse,
-  })
-  async findOneRoomType(@Param('id') id: string): Promise<RoomTypeResponse> {
-    return this.roomservice.findOneRoomType(id);
-  }
-
-  @Post('roomtype')
-  @HttpCode(200)
-  @ApiResponse({
-    status: 200,
-    description: 'RoomType created successfully',
-    type: RoomTypeResponse,
-  })
-  @ApiResponse({
-    status: 400,
-    description: 'Validation error',
-  })
-  async createRoomType(
-    @Body() request: RoomTypeCreateRequest,
-  ): Promise<RoomTypeResponse> {
-    return this.roomservice.createRoomType(request);
-  }
-
-  @Delete('roomtype/:id')
-  @HttpCode(200)
-  @ApiResponse({
-    status: 200,
-    description: 'RoomType successfully deleted',
-    type: DeleteResponse,
-  })
-  async deleteRoomType(@Param('id') id: string): Promise<DeleteResponse> {
-    return this.roomservice.deleteRoomType(id);
-  }
   
 }

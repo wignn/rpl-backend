@@ -7,13 +7,14 @@ import {
   Param,
   Post,
   Put,
+  Query,
 } from '@nestjs/common';
 import { ReportService } from './report.service';
-import { ReportCreateRequest, ReportResponse } from 'src/models/report.model';
+import { ReportCreateRequest, ReportResponse,ReportDetailResponse, PaginatedReportResponse } from 'src/models/report.model';
 import { ApiResponse } from '@nestjs/swagger';
 import { DeleteResponse } from 'src/models/common.model';
 
-@Controller('report')
+@Controller('api/report')
 export class ReportController {
   constructor(private readonly reportService: ReportService) {}
 
@@ -32,13 +33,17 @@ export class ReportController {
   @HttpCode(200)
   @ApiResponse({
     status: 200,
-    description: 'Get all reports',
-    type: [ReportResponse],
+    description: 'Get all reports with pagination',
+    type: PaginatedReportResponse,
   })
-  async findAll(): Promise<ReportResponse[]> {
-    return this.reportService.findAll();
+  async findAll(
+    @Query('page') page: string = '1',
+    @Query('limit') limit: string = '10',
+    @Query('month') month: string = new Date().toLocaleString('default', { month: 'long' }),
+  ): Promise<PaginatedReportResponse> {
+    return this.reportService.findAll(parseInt(page), parseInt(limit), month);
   }
-
+  
   @Get(':id')
   @HttpCode(200)
   @ApiResponse({
@@ -46,7 +51,7 @@ export class ReportController {
     description: 'Get report by ID',
     type: ReportResponse,
   })
-  async findOne(@Param('id') id: string): Promise<ReportResponse> {
+  async findOne(@Param('id') id: string): Promise<ReportDetailResponse> {
     return this.reportService.findOne(id);
   }
 
