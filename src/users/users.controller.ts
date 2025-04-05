@@ -13,7 +13,7 @@ import {
 import { UsersService } from './users.service';
 import {
   UserLoginRequest,
-UserLoginResponse,
+  UserLoginResponse,
   UserDetailResponse,
   UserUpdateRequest,
 } from 'src/models/user.model';
@@ -22,9 +22,10 @@ import { JwtGuard } from 'src/guards/jwt.guard';
 import { DeleteResponse } from 'src/models/common.model';
 import { ErrorResponse } from 'src/models/http-exception.model';
 import { ValidationError } from 'src/models/custom-exception';
+import { RefreshJwtGuard } from 'src/guards/refresh.guard';
 
-@ApiTags('Users')
-@Controller('users')
+@ApiTags('users')
+@Controller('api/users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
@@ -111,5 +112,17 @@ export class UsersController {
   })
   async delete(@Param('id') id: string): Promise<DeleteResponse> {
     return this.usersService.delete(id);
+  }
+
+  @UseGuards(RefreshJwtGuard)
+  @Patch('refresh')
+  @HttpCode(200)
+  @ApiResponse({
+    status: 200,
+    description: 'User successfully refreshed',
+    type: UserLoginResponse,
+  })
+  async refresh(@Body() request: any): Promise<UserLoginResponse> {
+    return this.usersService.refreshToken(request);
   }
 }

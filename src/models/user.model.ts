@@ -33,13 +33,13 @@ export class UserLoginResponse {
     example: 'pqiwoqkmwknq',
     required: true,
   })
-  id: string;
+  id_user: string;
 
   @ApiProperty({
     example: 'wign',
     required: true,
   })
-  username: string;
+  name: string;
 
   @ApiProperty({
     example: 'ADMIN',
@@ -61,7 +61,7 @@ export class UserDetailResponse {
     example: 'wign',
     required: false,
   })
-  id: string;
+  id_user: string;
 
   @ApiProperty({
     example: 'wign',

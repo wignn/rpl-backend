@@ -31,6 +31,19 @@ export class TenantService {
       throw new HttpException('User already exists', 400);
     }
 
+    const u = await this.prismaService.room.findUnique({
+      where: { id_room: tenantRequest.id_room },
+      include: {
+        roomType:{
+          select:{
+            room_type:true,
+            price:true,
+          }
+        }
+      },
+    })
+
+
     const hashPassword = await bcrypt.hash(tenantRequest.no_telp, 10);
 
     const user = await this.prismaService.user.create({
@@ -44,7 +57,9 @@ export class TenantService {
 
     const tenant = await this.prismaService.tenant.create({
       data: {
-        userId: user.id_user,
+        jatuh_tempo:tenantRequest.rent_in,
+        tagihan: u?.roomType.price,
+        userId: user.id_user, 
         address: tenantRequest.address,
         no_ktp: tenantRequest.no_ktp,
         status: tenantRequest.status,
