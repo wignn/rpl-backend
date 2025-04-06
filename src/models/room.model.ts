@@ -80,6 +80,7 @@ export class RoomDetailResponse extends RoomResponse {
         price: number;
         created_at: Date;
         updated_at: Date;
+        room_type: string;
     };
 }
 

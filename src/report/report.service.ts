@@ -72,22 +72,25 @@ export class ReportService {
       januari: 1, februari: 2, maret: 3, april: 4,
       mei: 5, juni: 6, juli: 7, agustus: 8,
       september: 9, oktober: 10, november: 11, desember: 12
-  };
-
-    let monthFilter = {}; 
+    };
+  
+    let monthFilter = {};
   
     if (month.toLowerCase() !== 'semua') {
       const monthNumber = monthMap[month.toLowerCase()];
       if (!monthNumber) {
-        throw new Error(`Invalid month name: ${month}`); 
+        throw new Error(`Invalid month name: ${month}`);
       }
   
       const currentYear = new Date().getFullYear();
   
+      const nextMonth = monthNumber === 12 ? 1 : monthNumber + 1;
+      const nextYear = monthNumber === 12 ? currentYear + 1 : currentYear;
+  
       monthFilter = {
         created_at: {
           gte: new Date(`${currentYear}-${monthNumber.toString().padStart(2, '0')}-01T00:00:00.000Z`),
-          lt: new Date(`${currentYear}-${(monthNumber + 1).toString().padStart(2, '0')}-01T00:00:00.000Z`),
+          lt: new Date(`${nextYear}-${nextMonth.toString().padStart(2, '0')}-01T00:00:00.000Z`),
         },
       };
     }
@@ -125,6 +128,7 @@ export class ReportService {
       totalItems: totalItems,
     };
   }
+  
   
 
   

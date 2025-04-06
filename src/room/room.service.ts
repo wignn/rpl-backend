@@ -6,13 +6,10 @@ import {
   RoomCreateRequest,
   RoomCreateResponse,
   RoomDetailResponse,
-  RoomTypeCreateRequest,
-  RoomTypeResponse,
-  RoomTypeUpdateRequest,
   RoomUpdateRequest,
 } from 'src/models/room.model';
 import { Logger } from 'winston';
-import { RoomtypeValidation, RoomValidation } from './room.validation';
+import {RoomValidation } from './room.validation';
 import { DeleteResponse } from 'src/models/common.model';
 
 @Injectable()
@@ -68,6 +65,7 @@ export class RoomService {
       updated_at: room.updated_at,
       roomtype: {
         id_roomtype: room.roomType.id_roomtype,
+        room_type: room.roomType.room_type,
         price: room.roomType.price,
         created_at: room.roomType.created_at,
         updated_at: room.roomType.updated_at,
@@ -92,6 +90,7 @@ export class RoomService {
       updated_at: room.updated_at,
       roomtype: {
         id_roomtype: room.roomType.id_roomtype,
+        room_type: room.roomType.room_type,
         price: room.roomType.price,
         created_at: room.roomType.created_at,
         updated_at: room.roomType.updated_at,
