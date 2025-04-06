@@ -3,7 +3,10 @@ import { HttpException, Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { PrismaService } from 'src/common/prisma.service';
-import { TenantCreateRequest, TenantCreateResponse } from 'src/models/tenant.model';
+import {
+  TenantCreateRequest,
+  TenantCreateResponse,
+} from 'src/models/tenant.model';
 import { TenantValidation } from './tenat.validation';
 import * as bcrypt from 'bcrypt';
 
@@ -34,15 +37,14 @@ export class TenantService {
     const u = await this.prismaService.room.findUnique({
       where: { id_room: tenantRequest.id_room },
       include: {
-        roomType:{
-          select:{
-            room_type:true,
-            price:true,
-          }
-        }
+        roomType: {
+          select: {
+            room_type: true,
+            price: true,
+          },
+        },
       },
-    })
-
+    });
 
     const hashPassword = await bcrypt.hash(tenantRequest.no_telp, 10);
 
@@ -57,9 +59,9 @@ export class TenantService {
 
     const tenant = await this.prismaService.tenant.create({
       data: {
-        jatuh_tempo:tenantRequest.rent_in,
+        jatuh_tempo: tenantRequest.rent_in,
         tagihan: u?.roomType.price,
-        userId: user.id_user, 
+        userId: user.id_user,
         address: tenantRequest.address,
         no_ktp: tenantRequest.no_ktp,
         status: tenantRequest.status,
@@ -74,6 +76,11 @@ export class TenantService {
         roomId: tenantRequest.id_room,
         rent_date: tenantRequest.rent_in,
       },
+    });
+
+    await this.prismaService.room.update({
+      where: { id_room: tenantRequest.id_room },
+      data: { status: 'NOTAVAILABLE' },
     });
 
     return {
@@ -103,7 +110,12 @@ export class TenantService {
     this.logger.info('Fetching all tenants');
 
     const data = await this.prismaService.tenant.findMany({
-      where: { deleted: false },
+      where: {
+        deleted: false,
+        user: {
+          role: 'TENANT',
+        },
+      },
       include: {
         user: true,
         rentData: {
@@ -125,6 +137,13 @@ export class TenantService {
       status: tenant.status,
       no_telp: tenant.no_telp,
       full_name: tenant.full_name,
+      rent: {
+        id_rent: tenant.rentData?.id_rent ?? null,
+        id_tenant: tenant.rentData?.tenantId ?? null,
+        id_room: tenant.rentData?.roomId ?? null,
+        rent_date: tenant.rentData?.rent_date ?? null,
+        rent_out: tenant.rentData?.rent_out ?? null,
+      },
       room: tenant.rentData
         ? {
             id_room: tenant.rentData.roomId,

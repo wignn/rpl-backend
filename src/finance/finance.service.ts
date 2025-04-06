@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { PrismaService } from 'src/common/prisma.service';
 import { ValidationService } from 'src/common/validate.service';
-import { FinanceCreateRequest, FinanceResponse } from 'src/models/finance.model';
+import { FinanceCreateRequest, FinanceDetailsResponse, FinanceResponse } from 'src/models/finance.model';
 import { Logger } from 'winston';
 import { FinanceValidation } from './finance.validation';
 
@@ -40,11 +40,16 @@ export class FinanceService {
     }
   }
 
-  async getAll(): Promise<FinanceResponse[]> {
+  async getAll(): Promise<FinanceDetailsResponse[]> {
     this.logger.info('Getting all finance');
     const finances = await this.prismaService.finance.findMany({
       where: {
         deleted: false,
+        
+      },
+      include: {
+        tenant: true,
+        rentData: true,
       },
       orderBy: {
         created_at: 'desc',
@@ -54,23 +59,37 @@ export class FinanceService {
     this.logger.info('Finances retrieved successfully', { finances });
     return finances.map((finance) => ({
       id_finance: finance.id_finance,
-      id_tenant: finance.id_tenant || undefined,
-      id_rent: finance.id_rent || undefined,
+      id_tenant: finance.id_tenant ?? "", 
+      id_rent: finance.id_rent ?? "",     
       type: finance.type,
       category: finance.category,
       amount: finance.amount,
       payment_date: finance.payment_date,
       created_at: finance.created_at,
       updated_at: finance.updated_at,
+      tenant: {
+        id_tenant: finance.tenant?.id_tenant ?? "", 
+        name: finance.tenant?.full_name ?? "",     
+      },
+      rentData: {
+        id_rent: finance.rentData?.id_rent ?? "",      
+        id_room: finance.rentData?.roomId ?? "",       
+        rent_date: finance.rentData?.rent_date ?? new Date(0), 
+      },
     }));
+    
   }
 
-  async getById(id: string): Promise<FinanceResponse> {
+  async getById(id: string): Promise<FinanceDetailsResponse> {
     this.logger.info('Getting finance by id', { id });
     const finance = await this.prismaService.finance.findUnique({
       where: {
         id_finance: id,
         deleted: false,
+      },
+      include: {
+        tenant: true,
+        rentData: true,
       },
     });
 
@@ -82,14 +101,23 @@ export class FinanceService {
     this.logger.info('Finance retrieved successfully', { finance });
     return {
       id_finance: finance.id_finance,
-      id_tenant: finance.id_tenant || undefined,
-      id_rent: finance.id_rent || undefined,
+      id_tenant: finance.id_tenant ?? "", 
+      id_rent: finance.id_rent ?? "",     
       type: finance.type,
       category: finance.category,
       amount: finance.amount,
       payment_date: finance.payment_date,
       created_at: finance.created_at,
       updated_at: finance.updated_at,
+      tenant: {
+        id_tenant: finance.tenant?.id_tenant ?? "", 
+        name: finance.tenant?.full_name ?? "",     
+      },
+      rentData: {
+        id_rent: finance.rentData?.id_rent ?? "",      
+        id_room: finance.rentData?.roomId ?? "",       
+        rent_date: finance.rentData?.rent_date ?? new Date(0), 
+      },
     };
   }
 

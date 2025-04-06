@@ -7,6 +7,7 @@ import { PrismaService } from 'src/common/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { DeleteResponse } from 'src/models/common.model';
+import { UserValidation } from './user.validation';
 
 @Injectable()
 export class UsersService {
@@ -19,10 +20,12 @@ export class UsersService {
 
   async signIn(request: UserLoginRequest): Promise<UserLoginResponse> {
     this.logger.info(`Signing in user`);
+    this.logger.info(`Request: ${JSON.stringify(request)}`);
+    const UserLoginRequest:UserLoginRequest = this.ValidationService.validate(UserValidation.LOGIN, request);
 
     const user = await this.prismaService.user.findUnique({
       where: {
-        phone: request.phone,
+        phone: UserLoginRequest.phone
       },
     });
 
@@ -30,7 +33,7 @@ export class UsersService {
       throw new HttpException('Email or password is incorrect ', 404);
     }
 
-    const passwordMatch = await bcrypt.compare(request.password, user.password);
+    const passwordMatch = await bcrypt.compare(UserLoginRequest.password, user.password);
     if (!passwordMatch) {
       throw new HttpException('Email or password is incorrect ', 404);
     }
@@ -155,7 +158,7 @@ export class UsersService {
   }
   async refreshToken(user: any): Promise<UserLoginResponse> {
     const payload = {
-        username: user.username,
+        name: user.name,
         sub: {
             name: user.name,
         },

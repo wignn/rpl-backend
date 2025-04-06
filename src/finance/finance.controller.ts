@@ -1,9 +1,9 @@
 import { Body, Controller, Delete, Get, HttpCode, Param, Post, Put } from '@nestjs/common';
 import { FinanceService } from './finance.service';
-import { FinanceCreateRequest, FinanceResponse } from 'src/models/finance.model';
+import { FinanceCreateRequest, FinanceDetailsResponse, FinanceResponse } from 'src/models/finance.model';
 import { ApiResponse } from '@nestjs/swagger';
 
-@Controller('finance')
+@Controller('api/finance')
 export class FinanceController {
     constructor(
         private readonly financeService: FinanceService
@@ -31,7 +31,7 @@ export class FinanceController {
         isArray: true,
     })
     async getAllFinance(
-    ): Promise<FinanceResponse[]> {
+    ): Promise<FinanceDetailsResponse[]> {
         return this.financeService.getAll();
     }
 
@@ -44,7 +44,7 @@ export class FinanceController {
     })
     async getFinanceById(
         @Param('id') id: string
-    ):Promise<FinanceResponse>{
+    ):Promise<FinanceDetailsResponse>{
         return this.financeService.getById(id);
     }
 
