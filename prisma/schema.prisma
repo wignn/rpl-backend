@@ -69,6 +69,7 @@ model RoomType {
   id_roomtype String   @id @default(cuid())
   room_type   String
   price       Int
+  image       String?
   deleted     Boolean  @default(false)
   created_at  DateTime @default(now())
   updated_at  DateTime @updatedAt

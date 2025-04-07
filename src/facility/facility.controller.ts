@@ -8,7 +8,7 @@ import {
 import { ApiResponse } from '@nestjs/swagger';
 import { DeleteResponse } from 'src/models/common.model';
 
-@Controller('facility')
+@Controller('api/facility')
 export class FasilityController {
   constructor(private readonly facilityService: FasilityService) {}
 
