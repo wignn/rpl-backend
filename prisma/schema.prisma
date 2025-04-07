@@ -55,14 +55,15 @@ model RentData {
 }
 
 model Room {
-  id_room     String     @id @default(cuid())
+  id_room     String          @id @default(cuid())
   id_roomtype String
   status      ROOMSTATUS
-  deleted     Boolean    @default(false)
-  created_at  DateTime   @default(now())
-  updated_at  DateTime   @updatedAt
+  deleted     Boolean         @default(false)
+  created_at  DateTime        @default(now())
+  updated_at  DateTime        @updatedAt
   rentData    RentData[]
-  roomType    RoomType   @relation(fields: [id_roomtype], references: [id_roomtype])
+  roomType    RoomType        @relation(fields: [id_roomtype], references: [id_roomtype])
+  facilities  RoomFacility[]  
 }
 
 model RoomType {
@@ -72,6 +73,9 @@ model RoomType {
   image       String?
   deleted     Boolean  @default(false)
   created_at  DateTime @default(now())
+
+  id_facility String
+  facility    Facility @relation(fields: [id_facility], references: [id_facility])
   updated_at  DateTime @updatedAt
   rooms       Room[]
 }
@@ -91,13 +95,15 @@ model Report {
 }
 
 model Facility {
-  id_facility   String   @id @default(cuid())
+  id_facility   String         @id @default(cuid())
   facility_name String
   desc          String
-  deleted       Boolean  @default(false)
-  created_at    DateTime @default(now())
-  updated_at    DateTime @updatedAt
+  deleted       Boolean        @default(false)
+  created_at    DateTime       @default(now())
+  updated_at    DateTime       @updatedAt
   reports       Report[]
+  RoomType      RoomType[]
+  rooms         RoomFacility[]
 }
 
 model Finance {
@@ -113,6 +119,17 @@ model Finance {
   updated_at   DateTime  @updatedAt
   rentData     RentData? @relation(fields: [id_rent], references: [id_rent])
   tenant       Tenant?   @relation(fields: [id_tenant], references: [id_tenant])
+}
+
+model RoomFacility {
+  id         String   @id @default(cuid())
+  id_room     String
+  id_facility String
+
+  room       Room     @relation(fields: [id_room], references: [id_room])
+  facility   Facility @relation(fields: [id_facility], references: [id_facility])
+
+  @@unique([id_room, id_facility]) 
 }
 
 enum STATUS {
