@@ -57,15 +57,17 @@ export class RoomtypeService {
       price: roomType.price,
       created_at: roomType.created_at,
       updated_at: roomType.updated_at,
-      facility: {
-        id_facility: roomType.facility.id_facility,
-        facility_name: roomType.facility.facility_name,
-        desc: roomType.facility.desc,
-        created_at: roomType.facility.created_at,
-        updated_at: roomType.facility.updated_at,
-      },
-
+      facility: [
+        {
+          id_facility: roomType.facility.id_facility,
+          facility_name: roomType.facility.facility_name,
+          desc: roomType.facility.desc,
+          created_at: roomType.facility.created_at,
+          updated_at: roomType.facility.updated_at,
+        },
+      ],
     }));
+    
   }
 
   async findOneRoomType(id: string): Promise<RoomTypeResponse> {
