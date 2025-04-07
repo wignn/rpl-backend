@@ -33,7 +33,6 @@ export class TenantService {
     if (isUserExist > 0) {
       throw new HttpException('User already exists', 400);
     }
-
     const u = await this.prismaService.room.findUnique({
       where: { id_room: tenantRequest.id_room },
       include: {
@@ -41,11 +40,13 @@ export class TenantService {
           select: {
             room_type: true,
             price: true,
+            id_facility: true, 
           },
         },
       },
     });
 
+    
     const hashPassword = await bcrypt.hash(tenantRequest.no_telp, 10);
 
     const user = await this.prismaService.user.create({
@@ -78,6 +79,24 @@ export class TenantService {
       },
     });
 
+    if (u?.roomType.id_facility) {
+      const existing = await this.prismaService.roomFacility.findFirst({
+        where: {
+          id_room: tenantRequest.id_room,
+          id_facility: u.roomType.id_facility,
+        },
+      });
+    
+      if (!existing) {
+        await this.prismaService.roomFacility.create({
+          data: {
+            id_room: tenantRequest.id_room,
+            id_facility: u.roomType.id_facility,
+          },
+        });
+      }
+    }
+    
     await this.prismaService.room.update({
       where: { id_room: tenantRequest.id_room },
       data: { status: 'NOTAVAILABLE' },

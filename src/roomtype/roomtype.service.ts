@@ -23,13 +23,19 @@ export class RoomtypeService {
       RoomtypeValidation.CREATE,
       request,
     );
-
+    const r = await this.prisma.roomType.count({
+      where: { room_type: roomRequest.room_type, deleted: false },
+    })
     const roomType = await this.prisma.roomType.create({
-      data: roomRequest,
+      data: {
+        ...roomRequest,
+        
+      },
     });
 
     return {
       id_roomtype: roomType.id_roomtype,
+      id_facility: roomType.id_facility,
       room_type: roomType.room_type,
       price: roomType.price,
       created_at: roomType.created_at,
@@ -44,6 +50,7 @@ export class RoomtypeService {
      });
     console.log(roomTypes);
     return roomTypes.map((roomType) => ({
+      id_facility: roomType.id_facility,
       id_roomtype: roomType.id_roomtype,
       room_type: roomType.room_type,
       price: roomType.price,
@@ -61,6 +68,7 @@ export class RoomtypeService {
       throw new HttpException('Room Type not found', 404);
     }
     return {
+      id_facility: roomType.id_facility,
       id_roomtype: roomType.id_roomtype,
       room_type: roomType.room_type,
       price: roomType.price,
@@ -93,6 +101,7 @@ export class RoomtypeService {
 
     return {
       id_roomtype: roomType.id_roomtype,
+      id_facility: roomType.id_facility,
       room_type: roomType.room_type,
       price: roomType.price,
       created_at: roomType.created_at,
