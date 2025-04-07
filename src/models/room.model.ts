@@ -137,6 +137,25 @@ export class RoomTypeResponse extends RoomTypeCreateRequest {
     })
     updated_at: Date;
 }
+export class RoomTypeAllResponse extends RoomTypeCreateRequest {
+    @ApiProperty({
+        example: 'sdanknm3wmnkns',
+        required: true,
+    })
+    id_roomtype: string;
+
+    @ApiProperty({
+        example: '2021-08-22',
+        required: true,
+    })
+    created_at: Date;
+
+    @ApiProperty({
+        example: '2021-08-22',
+        required: true,
+    })
+    updated_at: Date;
+}
 
 
 export class RoomTypeDetailResponse extends RoomTypeResponse {

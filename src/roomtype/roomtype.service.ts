@@ -3,7 +3,7 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { PrismaService } from 'src/common/prisma.service';
 import { ValidationService } from 'src/common/validate.service';
 import { DeleteResponse } from 'src/models/common.model';
-import { RoomTypeCreateRequest, RoomTypeResponse, RoomTypeUpdateRequest } from 'src/models/room.model';
+import { RoomTypeAllResponse, RoomTypeCreateRequest, RoomTypeResponse, RoomTypeUpdateRequest } from 'src/models/room.model';
 import { RoomtypeValidation } from 'src/room/room.validation';
 import { Logger } from 'winston';
 
@@ -43,10 +43,11 @@ export class RoomtypeService {
     };
   }
 
-  async findAllRoomType(): Promise<RoomTypeResponse[]> {
+  async findAllRoomType(): Promise<RoomTypeAllResponse[]> {
     this.logger.info(`Finding all room types`);
     const roomTypes = await this.prisma.roomType.findMany({
       where: { deleted: false , },
+      include: { facility: true },
      });
     console.log(roomTypes);
     return roomTypes.map((roomType) => ({
@@ -56,6 +57,14 @@ export class RoomtypeService {
       price: roomType.price,
       created_at: roomType.created_at,
       updated_at: roomType.updated_at,
+      facility: {
+        id_facility: roomType.facility.id_facility,
+        facility_name: roomType.facility.facility_name,
+        desc: roomType.facility.desc,
+        created_at: roomType.facility.created_at,
+        updated_at: roomType.facility.updated_at,
+      },
+
     }));
   }
 
@@ -63,6 +72,7 @@ export class RoomtypeService {
     this.logger.info(`Finding room type with id ${id}`);
     const roomType = await this.prisma.roomType.findUnique({
       where: { id_roomtype: id, deleted: false },
+      include: { facility: true },
     });
     if (!roomType) {
       throw new HttpException('Room Type not found', 404);
@@ -74,6 +84,7 @@ export class RoomtypeService {
       price: roomType.price,
       created_at: roomType.created_at,
       updated_at: roomType.updated_at,
+      
     };
   }
 
