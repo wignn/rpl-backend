@@ -165,6 +165,12 @@ export class RoomTypeAllResponse {
     id_roomtype: string;
 
     @ApiProperty({
+        example: 'exemple.jpg',
+        required: true,
+    })
+    image?: string;
+
+    @ApiProperty({
         example: 'Deluxe',
         required: true,
     })

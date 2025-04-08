@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, RequestMethod } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { MiddlewareConsumer } from '@nestjs/common';
@@ -22,6 +22,16 @@ import { ApiKeyMiddleware } from './middleware/auth/auth.middleware';
 })
 export class AppModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(ApiKeyMiddleware).exclude('/', '/docs', '/docs-json').forRoutes('*');
+    consumer
+      .apply(ApiKeyMiddleware)
+      .exclude(
+        '/', 
+        '/docs', 
+        '/docs-json',
+        { path: '/files', method: RequestMethod.ALL },
+        { path: '/files/(.*)', method: RequestMethod.ALL }
+      )
+      .forRoutes('*');
   }
+  
 }

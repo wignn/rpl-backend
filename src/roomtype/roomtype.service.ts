@@ -66,6 +66,7 @@ export class RoomtypeService {
       price: roomType.price,
       created_at: roomType.created_at,
       updated_at: roomType.updated_at,
+      image: roomType.image ?? undefined,
       facility: roomType.facilities?.map((f) => ({
         id_facility: f.id_facility,          // ✅ perbaiki ini
         facility_name: f.facility_name,
