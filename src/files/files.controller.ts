@@ -20,9 +20,8 @@ export class FilesController {
   @UseInterceptors(FileInterceptor('file'))
   uploadFile(
     @UploadedFile() file: Express.Multer.File,
-    @Body() body: UploadFileRequest,
   ) {
-    return this.filesService.uploadFile(file, body.username, body.forWhat);
+    return this.filesService.uploadFile(file);
   }
  
   @Get(':filename')
