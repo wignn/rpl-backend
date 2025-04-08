@@ -3,17 +3,22 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { PrismaService } from 'src/common/prisma.service';
 import { ValidationService } from 'src/common/validate.service';
 import { DeleteResponse } from 'src/models/common.model';
-import { RoomTypeAllResponse, RoomTypeCreateRequest, RoomTypeResponse, RoomTypeUpdateRequest } from 'src/models/room.model';
+import {
+  RoomTypeAllResponse,
+  RoomTypeCreateRequest,
+  RoomTypeResponse,
+  RoomTypeUpdateRequest,
+} from 'src/models/room.model';
 import { RoomtypeValidation } from 'src/room/room.validation';
 import { Logger } from 'winston';
 
 @Injectable()
 export class RoomtypeService {
-    constructor(
-        private readonly validationService: ValidationService,
-        @Inject(WINSTON_MODULE_PROVIDER) private logger: Logger,
-        private prisma: PrismaService,
-    ) {}
+  constructor(
+    private readonly validationService: ValidationService,
+    @Inject(WINSTON_MODULE_PROVIDER) private logger: Logger,
+    private prisma: PrismaService,
+  ) {}
 
   async createRoomType(
     request: RoomTypeCreateRequest,
@@ -25,11 +30,16 @@ export class RoomtypeService {
     );
     const r = await this.prisma.roomType.count({
       where: { room_type: roomRequest.room_type, deleted: false },
-    })
+    });
+    const { id_facility, ...roomData } = roomRequest;
     const roomType = await this.prisma.roomType.create({
       data: {
-        ...roomRequest,
-        
+        ...roomData,
+        facility: {
+          connect: {
+            id_facility: id_facility,
+          },
+        },
       },
     });
 
@@ -46,9 +56,9 @@ export class RoomtypeService {
   async findAllRoomType(): Promise<RoomTypeAllResponse[]> {
     this.logger.info(`Finding all room types`);
     const roomTypes = await this.prisma.roomType.findMany({
-      where: { deleted: false , },
+      where: { deleted: false },
       include: { facility: true },
-     });
+    });
     console.log(roomTypes);
     return roomTypes.map((roomType) => ({
       id_facility: roomType.id_facility,
@@ -67,7 +77,6 @@ export class RoomtypeService {
         },
       ],
     }));
-    
   }
 
   async findOneRoomType(id: string): Promise<RoomTypeResponse> {
@@ -86,7 +95,6 @@ export class RoomtypeService {
       price: roomType.price,
       created_at: roomType.created_at,
       updated_at: roomType.updated_at,
-      
     };
   }
 
@@ -121,7 +129,6 @@ export class RoomtypeService {
       updated_at: roomType.updated_at,
     };
   }
-
 
   async deleteRoomType(id: string): Promise<DeleteResponse> {
     this.logger.info(`Deleting room type with id ${id}`);

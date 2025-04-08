@@ -14,6 +14,7 @@ export class RoomValidation {
 
 export class RoomtypeValidation {
   static readonly CREATE: ZodType = z.object({
+    id_facility: z.string().min(4),
     room_type: z.string().min(4),
     price: z.number().positive(),
   });
