@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, Param, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Param, Post, Put } from '@nestjs/common';
 import { ApiResponse } from '@nestjs/swagger';
 import { DeleteResponse } from 'src/models/common.model';
 import { RoomResponse, RoomTypeCreateRequest, RoomTypeResponse } from 'src/models/room.model';
@@ -11,7 +11,7 @@ export class RoomtypeController {
      ) { }
 
 
-  //roomtype
+  //get all room types
   @Get()
   @HttpCode(200)
   @ApiResponse({
@@ -23,6 +23,7 @@ export class RoomtypeController {
     return this.roomtypeService.findAllRoomType();
   }
 
+  //get room type by id
   @Get(':id')
   @HttpCode(200)
   @ApiResponse({
@@ -34,6 +35,8 @@ export class RoomtypeController {
     return this.roomtypeService.findOneRoomType(id);
   }
 
+
+  //create room type
   @Post()
   @HttpCode(200)
   @ApiResponse({
@@ -50,7 +53,29 @@ export class RoomtypeController {
   ): Promise<RoomTypeResponse> {
     return this.roomtypeService.createRoomType(request);
   }
+  @Put(':id')
+  @ApiResponse({
+    status: 200,
+    description: 'RoomType updated successfully',
+    type: RoomTypeResponse,
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Validation error',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'RoomType not exist',
+  })
+  @HttpCode(200)
+  async updateRoomType(
+    @Param('id') id: string,
+    @Body() request: RoomTypeCreateRequest,
+  ): Promise<RoomTypeResponse> {
+    return this.roomtypeService.updateRoomType(id, request);
+  }
 
+  //delete room type
   @Delete(':id')    
   @HttpCode(200)
   @ApiResponse({

@@ -103,20 +103,18 @@ export class RoomService {
     request: RoomUpdateRequest,
   ): Promise<RoomCreateResponse> {
     this.logger.info(`Updating room with id ${id}`);
+    console.log('Request:', request);
     const roomRequest: RoomUpdateRequest = this.validationService.validate(
       RoomValidation.UPDATE,
       request,
     );
 
-    // Pastikan RoomType ada
     const roomType = await this.prisma.roomType.findUnique({
       where: { id_roomtype: roomRequest.id_roomtype },
     });
     if (!roomType) {
       throw new HttpException('Room Type does not exist', 404);
     }
-
-    // Pastikan Room ada
     const existingRoom = await this.prisma.room.findUnique({
       where: { id_room: id, deleted: false },
     });
@@ -141,7 +139,6 @@ export class RoomService {
   async delete(id: string): Promise<DeleteResponse> {
     this.logger.info(`Deleting room with id ${id}`);
 
-    // Pastikan Room ada
     const room = await this.prisma.room.findUnique({
       where: { id_room: id, deleted: false },
     });

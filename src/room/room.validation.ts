@@ -8,18 +8,19 @@ export class RoomValidation {
 
   static readonly UPDATE: ZodType = z.object({
     id_roomtype: z.string().optional(),
-    status: z.enum(['Available', 'Not Available']).optional(),
+    status: z.enum(['AVAILABLE', 'NOTAVAILABLE']).optional(),
   });
 }
 
 export class RoomtypeValidation {
   static readonly CREATE: ZodType = z.object({
-    id_facility: z.string().min(4),
+    facilities: z.array(z.string()).min(1),
     room_type: z.string().min(4),
     price: z.number().positive(),
   });
 
   static readonly UPDATE: ZodType = z.object({
+    facilities: z.array(z.string()).min(1),
     room_type: z.string().optional(),
     price: z.number().positive().optional(),
   })

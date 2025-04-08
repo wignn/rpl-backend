@@ -6,6 +6,7 @@ import {
   HttpCode,
   Param,
   Post,
+  Put,
 } from '@nestjs/common';
 import { RoomService } from './room.service';
 import {
@@ -77,5 +78,16 @@ export class RoomController {
     return this.roomservice.delete(id);
   }
 
-  
+  @Put(':id')
+  @ApiResponse({
+    status: 200,
+    description: 'Room successfully updated',
+    type: RoomCreateResponse,
+  })
+  async update(
+    @Param('id') id: string,
+    @Body() request: RoomCreateRequest,
+  ): Promise<RoomCreateResponse> {
+    return this.roomservice.update(id, request);
+  }
 }

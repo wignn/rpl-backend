@@ -33,20 +33,18 @@ export class TenantService {
     if (isUserExist > 0) {
       throw new HttpException('User already exists', 400);
     }
+
     const u = await this.prismaService.room.findUnique({
       where: { id_room: tenantRequest.id_room },
       include: {
         roomType: {
-          select: {
-            room_type: true,
-            price: true,
-            id_facility: true, 
+          include: {
+            facilities: true,
           },
         },
       },
     });
 
-    
     const hashPassword = await bcrypt.hash(tenantRequest.no_telp, 10);
 
     const user = await this.prismaService.user.create({
@@ -61,7 +59,7 @@ export class TenantService {
     const tenant = await this.prismaService.tenant.create({
       data: {
         jatuh_tempo: tenantRequest.rent_in,
-        tagihan: u?.roomType.price,
+        tagihan: u?.roomType?.price ?? 0,
         userId: user.id_user,
         address: tenantRequest.address,
         no_ktp: tenantRequest.no_ktp,
@@ -79,24 +77,29 @@ export class TenantService {
       },
     });
 
-    if (u?.roomType.id_facility) {
-      const existing = await this.prismaService.roomFacility.findFirst({
-        where: {
-          id_room: tenantRequest.id_room,
-          id_facility: u.roomType.id_facility,
-        },
-      });
-    
-      if (!existing) {
-        await this.prismaService.roomFacility.create({
-          data: {
-            id_room: tenantRequest.id_room,
-            id_facility: u.roomType.id_facility,
+    // Handle RoomFacility creation for all facilities in RoomType
+    if (u?.roomType?.facilities?.length) {
+      for (const facility of u.roomType.facilities) {
+        const exists = await this.prismaService.roomFacility.findUnique({
+          where: {
+            id_room_id_facility: {
+              id_room: tenantRequest.id_room,
+              id_facility: facility.id_facility,
+            },
           },
         });
+
+        if (!exists) {
+          await this.prismaService.roomFacility.create({
+            data: {
+              id_room: tenantRequest.id_room,
+              id_facility: facility.id_facility,
+            },
+          });
+        }
       }
     }
-    
+
     await this.prismaService.room.update({
       where: { id_room: tenantRequest.id_room },
       data: { status: 'NOTAVAILABLE' },

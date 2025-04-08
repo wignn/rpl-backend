@@ -7,7 +7,9 @@ export class RoomCreateRequest {
         required: true,
     })
     id_roomtype: string;
+
     
+
     @ApiProperty({
         example: 'Available',
         required: true,
@@ -90,7 +92,7 @@ export class RoomTypeCreateRequest {
         example: 'sdanknm3wmnkns',
         required: true,
     })
-    id_facility: string;
+    facilities: string[]
     @ApiProperty({
         example: 'Deluxe',
         required: true,
@@ -112,18 +114,36 @@ export class RoomTypeUpdateRequest {
     room_type?: string;
     
     @ApiProperty({
+        example: 'sdanknm3wmnkns',
+        required: true,
+    })
+    facilities: string[];
+
+    @ApiProperty({
         example: 2000000,
         required: true,
     })
     price?: number;
 }
 
-export class RoomTypeResponse extends RoomTypeCreateRequest {
+export class RoomTypeResponse {
     @ApiProperty({
         example: 'sdanknm3wmnkns',
         required: true,
     })
     id_roomtype: string;
+
+    @ApiProperty({
+        example: 'Deluxe',
+        required: true,
+    })
+    room_type: string;
+
+    @ApiProperty({
+        example: 5555555,
+        required: true,
+    })
+    price: number;
 
     @ApiProperty({
         example: '2021-08-22',
@@ -137,13 +157,24 @@ export class RoomTypeResponse extends RoomTypeCreateRequest {
     })
     updated_at: Date;
 }
-export class RoomTypeAllResponse extends RoomTypeCreateRequest {
+export class RoomTypeAllResponse {
     @ApiProperty({
         example: 'sdanknm3wmnkns',
         required: true,
     })
     id_roomtype: string;
 
+    @ApiProperty({
+        example: 'Deluxe',
+        required: true,
+    })
+    room_type: string;
+
+    @ApiProperty({
+        example: 5555555,
+        required: true,
+    })
+    price: number;
     @ApiProperty({
         example: '2021-08-22',
         required: true,
@@ -155,6 +186,23 @@ export class RoomTypeAllResponse extends RoomTypeCreateRequest {
         required: true,
     })
     updated_at: Date;
+    
+
+    @ApiProperty({
+        example: {
+            id_facility: 'sdanknm3wmnkns',
+            facility_name: 'AC',
+            created_at: '2021-08-22',
+            updated_at: '2021-08-22',
+        },
+        required: true,
+    })
+    facility: {
+        id_facility: string;
+        facility_name: string;
+        created_at: Date;
+        updated_at: Date;
+    }[];
 }
 
 
