@@ -39,6 +39,7 @@ export class RoomService {
       data: {
         id_roomtype: roomRequest.id_roomtype,
         status: roomRequest.status,
+        
       },
     });
 

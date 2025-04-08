@@ -37,6 +37,7 @@ export class RoomtypeService {
       data: {
         room_type: roomRequest.room_type,
         price: roomRequest.price,
+        image: roomRequest.image,
         facilities: {
           connect: roomRequest.facilities.map((f) => ({ id_facility: f })),
         },
@@ -68,7 +69,7 @@ export class RoomtypeService {
       updated_at: roomType.updated_at,
       image: roomType.image ?? undefined,
       facility: roomType.facilities?.map((f) => ({
-        id_facility: f.id_facility,          // ✅ perbaiki ini
+        id_facility: f.id_facility,          
         facility_name: f.facility_name,
         created_at: f.created_at,
         updated_at: f.updated_at,

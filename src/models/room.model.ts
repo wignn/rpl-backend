@@ -100,6 +100,12 @@ export class RoomTypeCreateRequest {
     room_type: string;
     
     @ApiProperty({
+        example: 'exemple.jpg',
+        required: true,
+    })
+    image: string;
+
+    @ApiProperty({
         example: 2000000,
         required: true,
     })
