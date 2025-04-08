@@ -27,7 +27,7 @@ export class FilesService {
 
     return {
       filename: newFileName,
-      path: `/file/${newFileName}`,
+      path: `/files/${newFileName}`,
     };
   }
 }
