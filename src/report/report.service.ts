@@ -63,8 +63,13 @@ export class ReportService {
   }
 
   
-  async findAll(page: number = 1, limit: number = 10, month: string = 'semua'): Promise<PaginatedReportResponse> {
-    this.logger.info(`Fetching reports - Page: ${page}, Limit: ${limit}, Month: ${month}`);
+  async findAll(
+    page: number = 1,
+    limit: number = 10,
+    month: string = 'semua',
+    query?: string,
+  ): Promise<PaginatedReportResponse> {
+    this.logger.info(`Fetching reports - Page: ${page}, Limit: ${limit}, Month: ${month}, Query: ${query}`);
   
     const offset = (page - 1) * limit;
   
@@ -83,7 +88,6 @@ export class ReportService {
       }
   
       const currentYear = new Date().getFullYear();
-  
       const nextMonth = monthNumber === 12 ? 1 : monthNumber + 1;
       const nextYear = monthNumber === 12 ? currentYear + 1 : currentYear;
   
@@ -95,18 +99,39 @@ export class ReportService {
       };
     }
   
+    const whereClause = {
+      deleted: false,
+      ...monthFilter,
+      ...(query
+        ? {
+            OR: [
+              {
+                report_desc: {
+                  contains: query,
+                  mode: 'insensitive' as const,
+                },
+              },
+              {
+                tenant: {
+                  is: {
+                    full_name: {
+                      contains: query,
+                      mode: 'insensitive' as const,
+                    },
+                  },
+                },
+              },
+            ],
+          }
+        : {}),
+    };
+  
     const totalItems = await this.prismaService.report.count({
-      where: {
-        deleted: false,
-        ...monthFilter,
-      },
+      where: whereClause,
     });
   
     const reports = await this.prismaService.report.findMany({
-      where: {
-        deleted: false,
-        ...monthFilter,
-      },
+      where: whereClause,
       orderBy: { created_at: 'desc' },
       skip: offset,
       take: limit,
@@ -128,6 +153,7 @@ export class ReportService {
       totalItems: totalItems,
     };
   }
+  
   
   
 
