@@ -40,8 +40,9 @@ export class ReportController {
     @Query('page') page: string = '1',
     @Query('limit') limit: string = '10',
     @Query('month') month: string = new Date().toLocaleString('default', { month: 'long' }),
+    @Query('search') search: string = '',
   ): Promise<PaginatedReportResponse> {
-    return this.reportService.findAll(parseInt(page), parseInt(limit), month);
+    return this.reportService.findAll(parseInt(page), parseInt(limit), month, search);
   }
   
   @Get(':id')
