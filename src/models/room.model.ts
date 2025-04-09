@@ -163,7 +163,7 @@ export class RoomTypeResponse {
     })
     updated_at: Date;
 }
-export class RoomTypeAllResponse {
+export class RoomTypeDetailsResponse {
     @ApiProperty({
         example: 'sdanknm3wmnkns',
         required: true,
@@ -218,20 +218,3 @@ export class RoomTypeAllResponse {
 }
 
 
-export class RoomTypeDetailResponse extends RoomTypeResponse {
-    @ApiProperty({
-        example: {
-            id_room: 'sdanknm3wmnkns',
-            status: 'Available',
-            created_at: '2021-08-22',
-            updated_at: '2021-08-22',
-        },
-        required: true,
-    })
-    rooms: {
-        id_room: string;
-        status: ROOMSTATUS;
-        created_at: Date;
-        updated_at: Date;
-    }[];
-}

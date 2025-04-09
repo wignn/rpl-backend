@@ -4,8 +4,8 @@ import { PrismaService } from 'src/common/prisma.service';
 import { ValidationService } from 'src/common/validate.service';
 import { DeleteResponse } from 'src/models/common.model';
 import {
-  RoomTypeAllResponse,
   RoomTypeCreateRequest,
+  RoomTypeDetailsResponse,
   RoomTypeResponse,
   RoomTypeUpdateRequest,
 } from 'src/models/room.model';
@@ -54,7 +54,7 @@ export class RoomtypeService {
     };
   }
 
-  async findAllRoomType(): Promise<RoomTypeAllResponse[]> {
+  async findAllRoomType(): Promise<RoomTypeDetailsResponse[]> {
     this.logger.info(`Finding all room types`);
     const roomTypes = await this.prisma.roomType.findMany({
       where: { deleted: false },
@@ -78,7 +78,7 @@ export class RoomtypeService {
     
   }
 
-  async findOneRoomType(id: string): Promise<RoomTypeResponse> {
+  async findOneRoomType(id: string): Promise<RoomTypeDetailsResponse> {
     this.logger.info(`Finding room type with id ${id}`);
     const roomType = await this.prisma.roomType.findUnique({
       where: { id_roomtype: id, deleted: false },
@@ -91,8 +91,15 @@ export class RoomtypeService {
       id_roomtype: roomType.id_roomtype,
       room_type: roomType.room_type,
       price: roomType.price,
+      image: roomType.image ?? undefined,
       created_at: roomType.created_at,
       updated_at: roomType.updated_at,
+      facility: roomType.facilities?.map((f) => ({
+        id_facility: f.id_facility,
+        facility_name: f.facility_name,
+        created_at: f.created_at,
+        updated_at: f.updated_at,
+      })) ?? [],
     };
   }
   async updateRoomType(
