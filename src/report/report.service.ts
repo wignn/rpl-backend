@@ -32,24 +32,30 @@ export class ReportService {
         id_facility: ReportCreateRequest.id_facility,
       },
     });
-
+console.log('isFacilityExists', isFacilityExists);
     const isTenantExists = await this.prismaService.tenant.count({
       where: {
         id_tenant: ReportCreateRequest.id_tenant,
+        
       },
+      
     });
 
+console.log('isTenantExists', isTenantExists);
     if (isFacilityExists === 0) {
       throw new Error('Facility not found');
     }
     if (isTenantExists === 0) {
       throw new Error('Tenant not found');
     }
+    
 
     const report = await this.prismaService.report.create({
       data: ReportCreateRequest,
     });
 
+    this.logger.info(`Report created with ID: ${report.id_report}`);
+    this.logger.info(`Report data: ${JSON.stringify(report)}`);
     return {
       id_report: report.id_report,
       id_tenant: report.id_tenant,
@@ -59,6 +65,7 @@ export class ReportService {
       status: report.status,
       created_at: report.created_at,
       updated_at: report.updated_at,
+      
     };
   }
 

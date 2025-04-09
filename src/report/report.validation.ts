@@ -8,7 +8,7 @@ export class ReportValidation {
     id_facility: z.string().min(1),
     report_desc: z.string().min(1),
     report_date: z.coerce.date(),
-    status: z.enum(["PENDING", "COMPLETED"]),
+    status: z.enum(["PENDING", "PENDING"]),
   })
 
   static readonly UPDATE: ZodType = z.object({

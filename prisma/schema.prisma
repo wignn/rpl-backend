@@ -18,12 +18,12 @@ model User {
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
   token      String?  @unique
-  tenants    Tenant[]
+  tenants    Tenant?
 }
 
 model Tenant {
   id_tenant   String    @id @default(cuid())
-  userId      String
+  userId      String    @unique
   full_name   String
   address     String
   no_ktp      String
@@ -55,28 +55,28 @@ model RentData {
 }
 
 model Room {
-  id_room     String          @id @default(cuid())
+  id_room     String         @id @default(cuid())
   id_roomtype String
   status      ROOMSTATUS
-  deleted     Boolean         @default(false)
-  created_at  DateTime        @default(now())
-  updated_at  DateTime        @updatedAt
+  deleted     Boolean        @default(false)
+  created_at  DateTime       @default(now())
+  updated_at  DateTime       @updatedAt
   rentData    RentData[]
-  roomType    RoomType        @relation(fields: [id_roomtype], references: [id_roomtype])
-  facilities  RoomFacility[]  
+  roomType    RoomType       @relation(fields: [id_roomtype], references: [id_roomtype])
+  facilities  RoomFacility[]
 }
 
 model RoomType {
-  id_roomtype String     @id @default(cuid())
+  id_roomtype String   @id @default(cuid())
   room_type   String
   price       Int
   image       String?
-  deleted     Boolean    @default(false)
-  created_at  DateTime   @default(now())
-  updated_at  DateTime   @updatedAt
+  deleted     Boolean  @default(false)
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
 
-  facilities  Facility[] @relation("RoomTypeFacilities")
-  rooms       Room[]
+  facilities Facility[] @relation("RoomTypeFacilities")
+  rooms      Room[]
 }
 
 model Report {
@@ -92,17 +92,18 @@ model Report {
   facility    Facility     @relation(fields: [id_facility], references: [id_facility])
   tenant      Tenant       @relation(fields: [id_tenant], references: [id_tenant])
 }
+
 model Facility {
-  id_facility   String     @id @default(cuid())
+  id_facility   String   @id @default(cuid())
   facility_name String
   desc          String
-  deleted       Boolean    @default(false)
-  created_at    DateTime   @default(now())
-  updated_at    DateTime   @updatedAt
+  deleted       Boolean  @default(false)
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
 
-  roomTypes     RoomType[] @relation("RoomTypeFacilities")
-  reports       Report[]
-  rooms         RoomFacility[]
+  roomTypes RoomType[]     @relation("RoomTypeFacilities")
+  reports   Report[]
+  rooms     RoomFacility[]
 }
 
 model Finance {
@@ -121,14 +122,14 @@ model Finance {
 }
 
 model RoomFacility {
-  id         String   @id @default(cuid())
+  id          String @id @default(cuid())
   id_room     String
   id_facility String
 
-  room       Room     @relation(fields: [id_room], references: [id_room])
-  facility   Facility @relation(fields: [id_facility], references: [id_facility])
+  room     Room     @relation(fields: [id_room], references: [id_room])
+  facility Facility @relation(fields: [id_facility], references: [id_facility])
 
-  @@unique([id_room, id_facility]) 
+  @@unique([id_room, id_facility])
 }
 
 enum STATUS {

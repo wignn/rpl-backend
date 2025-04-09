@@ -84,7 +84,15 @@ export class UsersService {
     const user = await this.prismaService.user.findUnique({
       where: {
         id_user: id,
+        
       },
+      include:{
+        tenants: {
+          select: {
+            id_tenant: true,
+          },
+        },
+      }
     });
 
     if (!user) {
@@ -96,6 +104,7 @@ export class UsersService {
       phone: user.phone,
       name: user.id_user,
       role: user.role as any,
+      id_tenant: user.tenants?.id_tenant,
       created_at: user.created_at,
       updated_at: user.updated_at,
     };

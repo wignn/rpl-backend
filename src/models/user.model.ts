@@ -67,6 +67,12 @@ export class UserDetailResponse {
     example: 'wign',
     required: false,
   })
+  id_tenant?: string;
+
+  @ApiProperty({
+    example: 'wign',
+    required: false,
+  })
   name: string;
 
   @ApiProperty({
