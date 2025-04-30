@@ -1,6 +1,11 @@
 import { HttpException, Inject, Injectable } from '@nestjs/common';
 import { ValidationService } from 'src/common/validate.service';
-import { UserLoginRequest, UserDetailResponse, UserLoginResponse } from 'src/models/user.model';
+import {
+  UserLoginRequest,
+  UserDetailResponse,
+  UserLoginResponse,
+  userCreate,
+} from 'src/models/user.model';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 import { PrismaService } from 'src/common/prisma.service';
@@ -21,11 +26,14 @@ export class UsersService {
   async signIn(request: UserLoginRequest): Promise<UserLoginResponse> {
     this.logger.info(`Signing in user`);
     this.logger.info(`Request: ${JSON.stringify(request)}`);
-    const UserLoginRequest:UserLoginRequest = this.ValidationService.validate(UserValidation.LOGIN, request);
+    const UserLoginRequest: UserLoginRequest = this.ValidationService.validate(
+      UserValidation.LOGIN,
+      request,
+    );
 
     const user = await this.prismaService.user.findUnique({
       where: {
-        phone: UserLoginRequest.phone
+        phone: UserLoginRequest.phone,
       },
     });
 
@@ -33,7 +41,10 @@ export class UsersService {
       throw new HttpException('Email or password is incorrect ', 404);
     }
 
-    const passwordMatch = await bcrypt.compare(UserLoginRequest.password, user.password);
+    const passwordMatch = await bcrypt.compare(
+      UserLoginRequest.password,
+      user.password,
+    );
     if (!passwordMatch) {
       throw new HttpException('Email or password is incorrect ', 404);
     }
@@ -84,15 +95,14 @@ export class UsersService {
     const user = await this.prismaService.user.findUnique({
       where: {
         id_user: id,
-        
       },
-      include:{
+      include: {
         tenants: {
           select: {
             id_tenant: true,
           },
         },
-      }
+      },
     });
 
     if (!user) {
@@ -131,10 +141,9 @@ export class UsersService {
       },
     });
 
-
     return {
-      message:"delete success",
-    }
+      message: 'delete success',
+    };
   }
 
   async update(id: string, request): Promise<UserDetailResponse> {
@@ -167,27 +176,51 @@ export class UsersService {
   }
   async refreshToken(user: any): Promise<UserLoginResponse> {
     const payload = {
+      name: user.name,
+      sub: {
         name: user.name,
-        sub: {
-            name: user.name,
-        },
+      },
     };
 
-    console.log(payload)
     return {
-        id_user: user.id_user,
-        name: user.name,
-        role: user.isAdmin,
-        backendTokens: {
-            accessToken: await this.jwtService.signAsync(payload, {
-                expiresIn: '1h',
-                privateKey: process.env.JWT_SECRET_KEY,
-            }),
-            refreshToken: await this.jwtService.signAsync(payload, {
-                expiresIn: '7d',
-                privateKey: process.env.JWT_REFRESH_TOKEN,
-            }),
-        },
+      id_user: user.id_user,
+      name: user.name,
+      role: user.isAdmin,
+      backendTokens: {
+        accessToken: await this.jwtService.signAsync(payload, {
+          expiresIn: '1h',
+          privateKey: process.env.JWT_SECRET_KEY,
+        }),
+        refreshToken: await this.jwtService.signAsync(payload, {
+          expiresIn: '7d',
+          privateKey: process.env.JWT_REFRESH_TOKEN,
+        }),
+      },
     };
-}
+  }
+
+
+  
+
+  async createAcount(request: userCreate):Promise<string> {
+    this.logger.info(`Creating user`);
+
+    const UserCreateRequest: userCreate = this.ValidationService.validate(
+      UserValidation.CREATE,
+      request,
+    );
+
+    const passwordHash = await bcrypt.hash(UserCreateRequest.password, 10);
+
+    const user = await this.prismaService.user.create({
+      data: {
+        name: UserCreateRequest.name,
+        phone: UserCreateRequest.phone,
+        password: passwordHash,
+        role: UserCreateRequest.role,
+      },
+    });
+
+    return user.id_user;
+  }
 }

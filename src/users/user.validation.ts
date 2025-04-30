@@ -12,4 +12,11 @@ export class UserValidation {
     role: z.enum(['TENANT', 'ADMIN']).optional(),
     phone: z.string().optional(),
   })
+
+  static readonly CREATE:ZodType = z.object({
+    name: z.string().min(3),
+    password: z.string().min(6),
+    role: z.enum(['TENANT', 'ADMIN']),
+    phone: z.string().min(10),
+  })
 }

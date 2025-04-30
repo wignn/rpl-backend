@@ -8,6 +8,7 @@ import {
   HttpCode,
   Put,
   UseGuards,
+  Post,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import {
@@ -15,6 +16,7 @@ import {
   UserLoginResponse,
   UserDetailResponse,
   UserUpdateRequest,
+  userCreate,
 } from 'src/models/user.model';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { JwtGuard } from 'src/guards/jwt.guard';
@@ -123,5 +125,17 @@ export class UsersController {
   })
   async refresh(@Body() request: any): Promise<UserLoginResponse> {
     return this.usersService.refreshToken(request);
+  }
+
+
+  @Post('create')
+  @HttpCode(200)
+  @ApiResponse({
+    status: 200,
+    description: 'User successfully created',
+    type: "create success",
+  })
+  async create(@Body() request: userCreate): Promise<string> {
+    return this.usersService.createAcount(request);
   }
 }

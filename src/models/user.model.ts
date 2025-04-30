@@ -126,3 +126,30 @@ export class UserUpdateRequest {
   })
   phone?: string;
 }
+
+
+export class userCreate {
+  @ApiProperty({
+    example: 'wign',
+    required: true,
+  })
+  name: string;
+
+  @ApiProperty({
+    example: 'randompassword',
+    required: true,
+  })
+  password: string;
+
+  @ApiProperty({
+    example: 'TENANT',
+    required: true,
+  })
+  role: ROLE;
+
+  @ApiProperty({
+    example: '08123456789',
+    required: true,
+  })
+  phone: string;
+}
