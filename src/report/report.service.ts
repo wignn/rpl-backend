@@ -32,23 +32,20 @@ export class ReportService {
         id_facility: ReportCreateRequest.id_facility,
       },
     });
-console.log('isFacilityExists', isFacilityExists);
+    console.log('isFacilityExists', isFacilityExists);
     const isTenantExists = await this.prismaService.tenant.count({
       where: {
         id_tenant: ReportCreateRequest.id_tenant,
-        
       },
-      
     });
 
-console.log('isTenantExists', isTenantExists);
+    console.log('isTenantExists', isTenantExists);
     if (isFacilityExists === 0) {
       throw new Error('Facility not found');
     }
     if (isTenantExists === 0) {
       throw new Error('Tenant not found');
     }
-    
 
     const report = await this.prismaService.report.create({
       data: ReportCreateRequest,
@@ -65,47 +62,61 @@ console.log('isTenantExists', isTenantExists);
       status: report.status,
       created_at: report.created_at,
       updated_at: report.updated_at,
-      
     };
   }
 
-  
   async findAll(
     page: number = 1,
     limit: number = 10,
     month: string = 'semua',
-    query?: string,
+    query?: string | null,
   ): Promise<PaginatedReportResponse> {
-    this.logger.info(`Fetching reports - Page: ${page}, Limit: ${limit}, Month: ${month}, Query: ${query}`);
-  
+    this.logger.info(
+      `Fetching reports - Page: ${page}, Limit: ${limit}, Month: ${month}, Query: ${query}`,
+    );
+
     const offset = (page - 1) * limit;
-  
+
     const monthMap: Record<string, number> = {
-      januari: 1, februari: 2, maret: 3, april: 4,
-      mei: 5, juni: 6, juli: 7, agustus: 8,
-      september: 9, oktober: 10, november: 11, desember: 12
+      january: 1,
+      february: 2,
+      march: 3,
+      april: 4,
+      may: 5,
+      june: 6,
+      july: 7,
+      august: 8,
+      september: 9,
+      october: 10,
+      november: 11,
+      december: 12,
     };
-  
+    
+
     let monthFilter = {};
-  
+
     if (month.toLowerCase() !== 'semua') {
       const monthNumber = monthMap[month.toLowerCase()];
       if (!monthNumber) {
         throw new Error(`Invalid month name: ${month}`);
       }
-  
+
       const currentYear = new Date().getFullYear();
       const nextMonth = monthNumber === 12 ? 1 : monthNumber + 1;
       const nextYear = monthNumber === 12 ? currentYear + 1 : currentYear;
-  
+
       monthFilter = {
         created_at: {
-          gte: new Date(`${currentYear}-${monthNumber.toString().padStart(2, '0')}-01T00:00:00.000Z`),
-          lt: new Date(`${nextYear}-${nextMonth.toString().padStart(2, '0')}-01T00:00:00.000Z`),
+          gte: new Date(
+            `${currentYear}-${monthNumber.toString().padStart(2, '0')}-01T00:00:00.000Z`,
+          ),
+          lt: new Date(
+            `${nextYear}-${nextMonth.toString().padStart(2, '0')}-01T00:00:00.000Z`,
+          ),
         },
       };
     }
-  
+
     const whereClause = {
       deleted: false,
       ...monthFilter,
@@ -132,11 +143,11 @@ console.log('isTenantExists', isTenantExists);
           }
         : {}),
     };
-  
+
     const totalItems = await this.prismaService.report.count({
       where: whereClause,
     });
-  
+
     const reports = await this.prismaService.report.findMany({
       where: whereClause,
       orderBy: { created_at: 'desc' },
@@ -147,12 +158,12 @@ console.log('isTenantExists', isTenantExists);
         facility: { select: { id_facility: true, facility_name: true } },
       },
     });
-  
+
     const reportsWithIndex = reports.map((report, index) => ({
       ...report,
       count: offset + index + 1,
     }));
-  
+
     return {
       data: reportsWithIndex,
       currentPage: page,
@@ -160,12 +171,6 @@ console.log('isTenantExists', isTenantExists);
       totalItems: totalItems,
     };
   }
-  
-  
-  
-
-  
-  
 
   async findOne(id: string): Promise<ReportDetailResponse> {
     this.logger.info(`Finding report with id ${id}`);
@@ -217,7 +222,9 @@ console.log('isTenantExists', isTenantExists);
     id: string,
     request: ReportUpdateRequest,
   ): Promise<ReportResponse> {
-    this.logger.info(`Updating report with id ${id}, data: ${JSON.stringify(request)}`);
+    this.logger.info(
+      `Updating report with id ${id}, data: ${JSON.stringify(request)}`,
+    );
     const ReportUpdateRequest: ReportUpdateRequest =
       this.validationService.validate(ReportValidation.UPDATE, request);
     const report = await this.prismaService.report.findUnique({

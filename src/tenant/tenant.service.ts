@@ -6,6 +6,7 @@ import { PrismaService } from 'src/common/prisma.service';
 import {
   TenantCreateRequest,
   TenantCreateResponse,
+  TenantUpdateRequest,
 } from 'src/models/tenant.model';
 import { TenantValidation } from './tenat.validation';
 import * as bcrypt from 'bcrypt';
@@ -22,7 +23,7 @@ export class TenantService {
     this.logger.info(`Creating new tenant`);
 
     const tenantRequest: TenantCreateRequest = this.validationService.validate(
-      TenantValidation.create,
+      TenantValidation.CREATE,
       request,
     );
 
@@ -176,5 +177,130 @@ export class TenantService {
           }
         : null,
     }));
+  }
+
+
+  
+async update(
+  id: string,
+  request: TenantUpdateRequest,
+): Promise<TenantCreateResponse> {
+  this.logger.info(`Updating tenant`);
+
+  const tenantRequest: TenantCreateRequest = this.validationService.validate(
+    TenantValidation.UPDATE,
+    request,
+  );
+
+  const existingTenant = await this.prismaService.tenant.findUnique({
+    where: { id_tenant: id },
+    include: { rentData: true }, // Include rentData so we can access old roomId
+  });
+
+  if (!existingTenant) {
+    throw new HttpException('Tenant not found', 404);
+  }
+
+  // Update tenant basic info
+  const updatedTenant = await this.prismaService.tenant.update({
+    where: { id_tenant: id },
+    data: {
+      address: tenantRequest.address,
+      no_ktp: tenantRequest.no_ktp,
+      status: tenantRequest.status,
+      no_telp: tenantRequest.no_telp,
+      full_name: tenantRequest.full_name,
+    },
+    include: {
+      user: true,
+    },
+  });
+
+  let updatedRentData: any = null;
+
+  if (existingTenant.rentData) {
+    const currentRoomId = existingTenant.rentData.roomId;
+    const newRoomId = tenantRequest.id_room ?? currentRoomId;
+
+
+    if (tenantRequest.id_room && tenantRequest.id_room !== currentRoomId) {
+      await this.prismaService.room.update({
+        where: { id_room: currentRoomId },
+        data: { status: 'AVAILABLE' },
+      });
+
+      const newRoom = await this.prismaService.room.findUnique({
+        where: { id_room: tenantRequest.id_room },
+      });
+
+      if (!newRoom) {
+        throw new HttpException('New room not found', 404);
+      }
+
+      await this.prismaService.room.update({
+        where: { id_room: tenantRequest.id_room },
+        data: { status: 'NOTAVAILABLE' },
+      });
+    }
+
+    // Update rentData
+    updatedRentData = await this.prismaService.rentData.update({
+      where: { id_rent: existingTenant.rentData.id_rent },
+      data: {
+        tenantId: updatedTenant.id_tenant,
+        roomId: tenantRequest.id_room ?? currentRoomId,
+        rent_date: tenantRequest.rent_in ?? existingTenant.rentData.rent_date,
+      },
+    });
+  }
+
+  return {
+    user: {
+      id_user: updatedTenant.user.id_user,
+      name: updatedTenant.user.name,
+      role: updatedTenant.user.role,
+    },
+    tenant: {
+      id_tenant: updatedTenant.id_tenant,
+      address: updatedTenant.address,
+      no_ktp: updatedTenant.no_ktp,
+      status: updatedTenant.status,
+      no_telp: updatedTenant.no_telp,
+      full_name: updatedTenant.full_name,
+    },
+    roomData: updatedRentData
+      ? {
+          id_rent: updatedRentData.id_rent,
+          id_tenant: updatedRentData.tenantId,
+          id_room: updatedRentData.roomId,
+          rent_date: updatedRentData.rent_date,
+        }
+      : {
+          id_rent: '',
+          id_tenant: '',
+          id_room: '',
+          rent_date: new Date(),
+        },
+  };
+}
+
+
+  async delete(id: string): Promise<any> {
+    this.logger.info(`Deleting tenant`);
+
+    const tenant = await this.prismaService.tenant.findUnique({
+      where: { id_tenant: id },
+    });
+
+    if (!tenant) {
+      throw new HttpException('Tenant not found', 404);
+    }
+
+    await this.prismaService.tenant.update({
+      where: { id_tenant: id },
+      data: { deleted: true },
+    });
+
+    return { message: 'Tenant deleted successfully' };
   }
 }

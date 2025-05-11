@@ -1,8 +1,9 @@
-import { Body, Controller, Get, HttpCode, Post } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Param, Post, Put } from '@nestjs/common';
 import { TenantService } from './tenant.service';
 import {
   TenantCreateRequest,
   TenantCreateResponse,
+  TenantUpdateRequest,
 } from 'src/models/tenant.model';
 import { ApiResponse } from '@nestjs/swagger';
 
@@ -33,4 +34,19 @@ export class TenantController {
   async findAll(): Promise<any> {
     return this.tenantservice.findAll();
   }
+
+  @Put(':id')
+  @HttpCode(200)
+  @ApiResponse({
+    status: 200,
+    description: 'Tenant updated successfully',
+    type: TenantUpdateRequest,
+  })
+  async update(
+    @Param('id') id: string,
+    @Body() request: TenantUpdateRequest,
+  ): Promise<any> {
+    return this.tenantservice.update(id, request);
+  }
+
 }

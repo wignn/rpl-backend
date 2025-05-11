@@ -38,6 +38,8 @@ export class UsersService {
     });
 
     if (!user) {
+      this.logger.error(
+        `User with phone ${UserLoginRequest.phone} not found`)
       throw new HttpException('Email or password is incorrect ', 404);
     }
 
@@ -45,7 +47,11 @@ export class UsersService {
       UserLoginRequest.password,
       user.password,
     );
+
     if (!passwordMatch) {
+      this.logger.error(
+        `Password for user with phone ${UserLoginRequest.phone} is incorrect`,
+      );
       throw new HttpException('Email or password is incorrect ', 404);
     }
 
@@ -56,7 +62,7 @@ export class UsersService {
         name: user.name,
       },
     };
-
+    this.logger.info(`User ${user.name} logged in successfully`);
     return {
       id_user: user.id_user,
       name: user.name,

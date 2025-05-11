@@ -97,6 +97,51 @@ class TenantRoomResponse {
     rent_date: Date;
 }
 
+export class TenantUpdateRequest {
+    @ApiProperty({
+        example: 'Jl. Kaliurang No. 10',
+        description: 'Address of the tenant',
+        required: false,
+    })
+    address?: string;
+    @ApiProperty({
+        example: '2311400000000004',
+        description: 'KTP number of the tenant',
+        required: false,
+    })
+    no_ktp?: string;
+    @ApiProperty({
+        example: 'MARRIED',
+        description: 'Marital status of the tenant',
+        required: false,
+    })
+    status?: STATUS;
+    @ApiProperty({
+        example: '08123456789',
+        description: 'Phone number of the tenant',
+        required: false,
+    })
+    no_telp?: string;
+    @ApiProperty({
+        example: 'R001',
+        description: 'Room ID assigned to the tenant',
+        required: false,
+    })
+    id_room?: string;
+    @ApiProperty({
+        example: '2021-08-22',
+        description: 'Date when the tenant moved in',
+        required: false,
+    })
+    rent_in?: string;
+    @ApiProperty({
+        example: 'M. Iqbal',
+        description: 'Full name of the tenant',
+        required: false,
+    })
+    full_name?: string;
+}
+
 export class TenantCreateResponse {
     @ApiProperty({ type: TenantUserResponse })
     user: TenantUserResponse;

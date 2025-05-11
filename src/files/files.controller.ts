@@ -5,7 +5,6 @@ import { Response } from 'express';
 import * as path from 'path';
 import * as fs from 'fs';
 import { ApiResponse } from '@nestjs/swagger';
-import { UploadFileRequest } from 'src/models/files.model';
 
 @Controller('files')
 export class FilesController {
