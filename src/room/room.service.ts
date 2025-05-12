@@ -104,7 +104,6 @@ export class RoomService {
     request: RoomUpdateRequest,
   ): Promise<RoomCreateResponse> {
     this.logger.info(`Updating room with id ${id}`);
-    console.log('Request:', request);
     const roomRequest: RoomUpdateRequest = this.validationService.validate(
       RoomValidation.UPDATE,
       request,

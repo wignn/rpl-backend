@@ -22,6 +22,7 @@ export class RoomtypeValidation {
 
   static readonly UPDATE: ZodType = z.object({
     facilities: z.array(z.string()).min(1),
+    image: z.string().optional(),
     room_type: z.string().optional(),
     price: z.number().positive().optional(),
   })

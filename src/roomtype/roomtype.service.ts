@@ -32,7 +32,7 @@ export class RoomtypeService {
     const r = await this.prisma.roomType.count({
       where: { room_type: roomRequest.room_type, deleted: false },
     });
-    console.log(roomRequest.room_type, r);
+
     const roomType = await this.prisma.roomType.create({
       data: {
         room_type: roomRequest.room_type,
@@ -60,7 +60,7 @@ export class RoomtypeService {
       where: { deleted: false },
       include: { facilities: true },
     });
-    console.log(roomTypes);
+
     return roomTypes.map((roomType) => ({
       id_roomtype: roomType.id_roomtype,
       room_type: roomType.room_type,
@@ -124,6 +124,7 @@ export class RoomtypeService {
       data: {
         room_type: roomRequest.room_type,
         price: roomRequest.price,
+        image: roomRequest.image,
         facilities: {
           set: [], 
           connect: roomRequest.facilities.map((f) => ({ id_facility: f })),

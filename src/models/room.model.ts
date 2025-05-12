@@ -120,6 +120,12 @@ export class RoomTypeUpdateRequest {
     room_type?: string;
     
     @ApiProperty({
+        example: 'exemple.jpg',
+        required: true,
+    })
+    image?: string;
+
+    @ApiProperty({
         example: 'sdanknm3wmnkns',
         required: true,
     })

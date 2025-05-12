@@ -13,14 +13,12 @@ export class AdminGuard implements CanActivate {
     async canActivate(context: ExecutionContext): Promise<boolean> {
       const request = context.switchToHttp().getRequest();
       const token = this.extractTokenFromHeader(request);
-      console.log(token)
       if (!token) throw new UnauthorizedException();
   
       try {
         const payload = await this.jwtService.verifyAsync(token, {
           secret: process.env.JWT_SECRET_KEY,
         });
-        console.log(payload)
         const isAdmin = payload.isAdmin;
         
 

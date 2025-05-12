@@ -19,10 +19,8 @@ import {
         const payload = await this.jwtService.verifyAsync(token, {
           secret: process.env.JWT_REFRESH_TOKEN,
         });
-        console.log('Payload:', payload);
         request['user'] = payload;
       } catch (err) {
-        console.error('JWT Verify Error:', err);
         throw new UnauthorizedException();
       }
       

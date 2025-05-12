@@ -1,4 +1,14 @@
-import { Controller, Get, Post, Param, UploadedFile, UseInterceptors, Res, Body, Delete, HttpCode } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Param,
+  UploadedFile,
+  UseInterceptors,
+  Res,
+  Delete,
+  HttpCode,
+} from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { FilesService } from './files.service';
 import { Response } from 'express';
@@ -17,15 +27,15 @@ export class FilesController {
     description: 'File successfully uploaded',
   })
   @UseInterceptors(FileInterceptor('file'))
-  uploadFile(
-    @UploadedFile() file: Express.Multer.File,
-  ) {
+  uploadFile(@UploadedFile() file: Express.Multer.File) {
     return this.filesService.uploadFile(file);
   }
- 
+
   @Get(':filename')
   getFile(@Param('filename') filename: string, @Res() res: Response) {
-    const filePath = path.join(__dirname, '../../uploads', filename);
+    //const filePath = path.resolve('../../uploads', filename);
+    const filePath = path.resolve('/usr/src/app/uploads', filename);
+    console.log('Looking for file at:', filePath);
     if (fs.existsSync(filePath)) {
       return res.sendFile(filePath);
     } else {
@@ -35,14 +45,16 @@ export class FilesController {
 
   @Delete(':filename')
   deleteFile(@Param('filename') filename: string, @Res() res: Response) {
-    const filePath = path.join(__dirname, '../../uploads', filename);
-    if (fs.existsSync(filePath
-    )) {
-      fs.unlinkSync(filePath
-      );
+    const fileName = path.basename(filename);
+    console.log('Deleting file:', fileName);
+    const filePath = path.resolve('/usr/src/app/uploads', fileName);
+    console.log('Resolved path:', filePath);
+
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
       return res.json({ message: 'File deleted' });
     } else {
-      return res.status(404).json({ message: 'File not found'});
+      return res.status(404).json({ message: 'File not found' });
     }
   }
 }

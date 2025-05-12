@@ -32,14 +32,12 @@ export class ReportService {
         id_facility: ReportCreateRequest.id_facility,
       },
     });
-    console.log('isFacilityExists', isFacilityExists);
     const isTenantExists = await this.prismaService.tenant.count({
       where: {
         id_tenant: ReportCreateRequest.id_tenant,
       },
     });
 
-    console.log('isTenantExists', isTenantExists);
     if (isFacilityExists === 0) {
       throw new Error('Facility not found');
     }
