@@ -194,14 +194,13 @@ async update(
 
   const existingTenant = await this.prismaService.tenant.findUnique({
     where: { id_tenant: id },
-    include: { rentData: true }, // Include rentData so we can access old roomId
+    include: { rentData: true }, 
   });
 
   if (!existingTenant) {
     throw new HttpException('Tenant not found', 404);
   }
 
-  // Update tenant basic info
   const updatedTenant = await this.prismaService.tenant.update({
     where: { id_tenant: id },
     data: {
@@ -220,8 +219,6 @@ async update(
 
   if (existingTenant.rentData) {
     const currentRoomId = existingTenant.rentData.roomId;
-    const newRoomId = tenantRequest.id_room ?? currentRoomId;
-
 
     if (tenantRequest.id_room && tenantRequest.id_room !== currentRoomId) {
       await this.prismaService.room.update({
@@ -290,7 +287,20 @@ async update(
 
     const tenant = await this.prismaService.tenant.findUnique({
       where: { id_tenant: id },
-    });
+      include: {
+        rentData: {
+          include: {
+            room: true,
+          },
+        },
+      }
+    }
+  );
+
+    await this.prismaService.room.update({
+      where: { id_room: tenant?.rentData?.roomId },
+      data: { status: 'AVAILABLE' },
+    })
 
     if (!tenant) {
       throw new HttpException('Tenant not found', 404);

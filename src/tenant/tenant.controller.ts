@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpCode, Param, Post, Put } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Param, Post, Put } from '@nestjs/common';
 import { TenantService } from './tenant.service';
 import {
   TenantCreateRequest,
@@ -47,6 +47,16 @@ export class TenantController {
     @Body() request: TenantUpdateRequest,
   ): Promise<any> {
     return this.tenantservice.update(id, request);
+  }
+
+  @Delete(':id')
+  @HttpCode(200)
+  @ApiResponse({
+    status: 200,
+    description: 'Tenant deleted successfully',
+  })
+  async delete(@Param('id') id: string): Promise<any> {
+    return this.tenantservice.delete(id);
   }
 
 }
