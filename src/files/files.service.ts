@@ -10,26 +10,26 @@ export class FilesService {
     }
 
     const ext = path.extname(file.originalname);
-
+    // const filePath = path.resolve('/usr/src/app/uploads', fileName);
+    
+    // Get current date in DD-MM-YYYY format
     const now = new Date();
     const dateString = `${now.getDate().toString().padStart(2, '0')}-${(now.getMonth() + 1).toString().padStart(2, '0')}-${now.getFullYear()}`;
 
+    // Fix forWhat to be consistent
     const fixedForWhat = 'greenakostjaya';
+    
     const uniqueSuffix = Math.round(Math.random() * 1e9);
     const newFileName = `${fixedForWhat}-${dateString}-${uniqueSuffix}${ext}`;
 
-    const uploadDir = path.resolve('/usr/src/app/uploads');
+    const oldPath = file.path;
+    const newPath = path.join(path.dirname(oldPath), newFileName);
 
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true });
-    }
-
-    const newPath = path.join(uploadDir, newFileName);
-    fs.renameSync(file.path, newPath);
+    fs.renameSync(oldPath, newPath);
 
     return {
       filename: newFileName,
-      path: `uploads/${newFileName}`, 
+      path: `files/${newFileName}`,
     };
   }
 }
