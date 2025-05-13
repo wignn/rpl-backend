@@ -33,8 +33,8 @@ export class FilesController {
 
   @Get(':filename')
   getFile(@Param('filename') filename: string, @Res() res: Response) {
-    //const filePath = path.resolve('../../uploads', filename);
-    const filePath = path.resolve('/usr/src/app/uploads', filename);
+    const filePath = path.resolve('../../uploads', filename);
+    //const filePath = path.resolve('/usr/src/app/uploads', filename);
     console.log('Looking for file at:', filePath);
     if (fs.existsSync(filePath)) {
       return res.sendFile(filePath);
@@ -46,8 +46,9 @@ export class FilesController {
   @Delete(':filename')
   deleteFile(@Param('filename') filename: string, @Res() res: Response) {
     const fileName = path.basename(filename);
-    console.log('Deleting file:', fileName);
-    const filePath = path.resolve('/usr/src/app/uploads', fileName);
+    const filePath = path.resolve('../../uploads', fileName);
+    
+    // const filePath = path.resolve('/usr/src/app/uploads', fileName);
     console.log('Resolved path:', filePath);
 
     if (fs.existsSync(filePath)) {
