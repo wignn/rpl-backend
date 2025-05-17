@@ -9,16 +9,19 @@ datasource db {
 }
 
 model User {
-  id_user    String   @id @default(cuid())
-  name       String
-  password   String
-  role       ROLE
-  phone      String   @unique
-  deleted    Boolean  @default(false)
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
-  token      String?  @unique
-  tenants    Tenant?
+  id_user         String    @id @default(cuid())
+  name            String
+  password        String
+  role            ROLE
+  phone           String    @unique
+  deleted         Boolean   @default(false)
+  created_at      DateTime  @default(now())
+  updated_at      DateTime  @updatedAt
+  otp             String?
+  otp_exp         DateTime?
+  reset_token     String? 
+  reset_token_exp DateTime?
+  tenants         Tenant?
 }
 
 model Tenant {

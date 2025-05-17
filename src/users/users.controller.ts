@@ -17,6 +17,7 @@ import {
   UserDetailResponse,
   UserUpdateRequest,
   userCreate,
+  passwordUpdate,
 } from 'src/models/user.model';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { JwtGuard } from 'src/guards/jwt.guard';
@@ -24,6 +25,7 @@ import { DeleteResponse } from 'src/models/common.model';
 import { ErrorResponse } from 'src/models/http-exception.model';
 import { ValidationError } from 'src/models/custom-exception';
 import { RefreshJwtGuard } from 'src/guards/refresh.guard';
+
 
 @ApiTags('users')
 @Controller('api/users')
@@ -127,15 +129,74 @@ export class UsersController {
     return this.usersService.refreshToken(request);
   }
 
-
   @Post('create')
   @HttpCode(200)
   @ApiResponse({
     status: 200,
     description: 'User successfully created',
-    type: "create success",
+    type: 'create success',
   })
   async create(@Body() request: userCreate): Promise<string> {
     return this.usersService.createAcount(request);
+  }
+
+  @Patch('reset-password')
+  @HttpCode(200)
+  @ApiResponse({
+    status: 200,
+    description: 'User successfully reset',
+    type: 'reset success',
+  })
+  async reset(
+    @Body() request: passwordUpdate,
+  ): Promise<{message:string}> {
+    console.log('request', request);
+    return this.usersService.resetPassword(request);
+  }
+
+  @Post('send-otp')
+  @HttpCode(200)
+  @ApiResponse({
+    status: 200,
+    description: 'User successfully sent OTP',
+    schema: {
+      properties: {
+        message: { type: 'string', example: 'OTP sent successfully' },
+        token: { type: 'string' }
+      }
+    }
+  })
+  async sendOtp(@Body() request: {phone: string}): Promise<{
+    message: string;
+    otp: string;
+  }> {
+    return this.usersService.sendOTP(request);
+  }
+
+
+  @Post('verify-otp')
+  @HttpCode(200)
+  @ApiResponse({
+    status: 200,
+    description: 'User successfully verified OTP',
+    type: 'verify success',
+  })
+  async verifyOtp(@Body() request: {otp: string, phone: string}): Promise<{message: string, token: string}> {
+    return this.usersService.verifyOTP(request);
+  }
+
+  @Post('verify-token')
+  @HttpCode(200)
+  @ApiResponse({
+    status: 200,
+    description: 'User successfully verified token',
+    schema: {
+      properties: {
+        message: { type: 'string' }
+      }
+    }
+  })
+  async verifyToken(@Body() request: {token: string, phone: string}): Promise<{message: string}> {
+    return this.usersService.verifyToken(request);
   }
 }

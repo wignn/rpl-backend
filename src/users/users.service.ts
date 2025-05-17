@@ -5,6 +5,7 @@ import {
   UserDetailResponse,
   UserLoginResponse,
   userCreate,
+  passwordUpdate,
 } from 'src/models/user.model';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
@@ -13,6 +14,9 @@ import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { DeleteResponse } from 'src/models/common.model';
 import { UserValidation } from './user.validation';
+import axios from 'axios';
+import { randomInt } from 'crypto';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class UsersService {
@@ -38,8 +42,7 @@ export class UsersService {
     });
 
     if (!user) {
-      this.logger.error(
-        `User with phone ${UserLoginRequest.phone} not found`)
+      this.logger.error(`User with phone ${UserLoginRequest.phone} not found`);
       throw new HttpException('Email or password is incorrect ', 404);
     }
 
@@ -129,7 +132,7 @@ export class UsersService {
   async delete(id: string): Promise<DeleteResponse> {
     this.logger.info(`Deleting user with id ${id}`);
 
-    const user = this.prismaService.user.findUnique({
+    const user = await this.prismaService.user.findUnique({
       where: {
         id_user: id,
       },
@@ -174,7 +177,7 @@ export class UsersService {
     return {
       id_user: updateUser.id_user,
       phone: updateUser.phone,
-      name: updateUser.id_user,
+      name: updateUser.name,
       role: updateUser.role,
       created_at: updateUser.created_at,
       updated_at: updateUser.updated_at,
@@ -205,10 +208,7 @@ export class UsersService {
     };
   }
 
-
-  
-
-  async createAcount(request: userCreate):Promise<string> {
+  async createAcount(request: userCreate): Promise<string> {
     this.logger.info(`Creating user`);
 
     const UserCreateRequest: userCreate = this.ValidationService.validate(
@@ -228,5 +228,166 @@ export class UsersService {
     });
 
     return user.id_user;
+  }
+
+  async resetPassword(request: passwordUpdate): Promise<{ message: string }> {
+    this.logger.info(`Resetting password`);
+    const UserUpdateRequest: passwordUpdate = this.ValidationService.validate(
+      UserValidation.RESET,
+      request,
+    );
+    const isValid = await this.prismaService.user.findFirst({
+      where: {
+        phone: UserUpdateRequest.phone,
+        reset_token: UserUpdateRequest.token,
+      },
+    });
+
+    if (!isValid) {
+      throw new HttpException('Invalid token', 401);
+    }
+
+    if (!isValid.reset_token_exp || isValid.reset_token_exp < new Date()) {
+      throw new HttpException('Token expired', 401);
+    }
+
+    const passwordHash = await bcrypt.hash(UserUpdateRequest.password, 10);
+
+    const user = await this.prismaService.user.update({
+      where: {
+        phone: UserUpdateRequest.phone,
+      },
+      data: {
+        password: passwordHash,
+        reset_token: null,
+        reset_token_exp: null,
+      },
+    });
+
+    if (!user) {
+      throw new HttpException('User not found', 401);
+    }
+
+    return {
+      message: 'Password reset successful',
+    };
+  }
+
+  async sendOTP(request: { phone: string }): Promise<{
+    message: string;
+    otp: string;
+  }> {
+    this.logger.info(`Verifying OTP`);
+
+    const user = await this.prismaService.user.findUnique({
+      where: {
+        phone: request.phone,
+      },
+    });
+
+    const otp = randomInt(0, 1_000_000).toString().padStart(6, '0');
+
+    const otp_expired = new Date();
+    otp_expired.setMinutes(otp_expired.getMinutes() + 5);
+
+    const message = `${otp} adalah kode OTP anda. demi keamanan jangan berikan kode ini kepada siapapun. kode ini berlaku selama 5 menit.`;
+
+    const res = await axios.post(
+      `${process.env.OTP_SERVICE}/api/send-message`,
+      {
+        number: request.phone,
+        message,
+      },
+    );
+
+    await this.prismaService.user.update({
+      where: {
+        phone: request.phone,
+      },
+      data: {
+        otp: otp,
+        otp_exp: otp_expired,
+      },
+    });
+
+    if (res.status !== 200) {
+      this.logger.error(`Error sending OTP: ${res.data}`);
+      throw new HttpException('Error sending OTP', 500);
+    }
+
+    if (!user) {
+      throw new HttpException('User not found', 401);
+    }
+
+    return {
+      message: 'Verification successful',
+      otp: otp,
+    };
+  }
+
+  async verifyOTP(request: {
+    otp: string;
+    phone: string;
+  }): Promise<{ message: string; token: string }> {
+    this.logger.info(`Verifying OTP`);
+
+    const user = await this.prismaService.user.findFirst({
+      where: {
+        otp: request.otp,
+      },
+    });
+
+    const otp_expired = new Date();
+    otp_expired.setMinutes(otp_expired.getMinutes() + 5);
+
+    if (!user) {
+      throw new HttpException('Invalid OTP', 401);
+    }
+
+    const token = uuidv4();
+
+    await this.prismaService.user.update({
+      where: {
+        phone: request.phone,
+      },
+      data: {
+        reset_token: token,
+        reset_token_exp: otp_expired,
+      },
+    });
+
+    if (!user.otp_exp || user.otp_exp < new Date()) {
+      throw new HttpException('OTP expired', 401);
+    }
+
+    return {
+      token,
+      message: 'Verification successful',
+    };
+  }
+
+  async verifyToken(request: {
+    token: string;
+    phone: string;
+  }): Promise<{ message: string }> {
+    this.logger.info(`Verifying token`);
+
+    const user = await this.prismaService.user.findUnique({
+      where: {
+        phone: request.phone,
+      },
+    });
+
+    if (!user) {
+      throw new HttpException('Invalid token', 401);
+    }
+
+    if (!user.reset_token_exp || user.reset_token_exp < new Date()) {
+      throw new HttpException('Token expired', 401);
+    }
+
+    return {
+      message: 'Verification successful',
+    };
   }
 }

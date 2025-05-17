@@ -19,4 +19,10 @@ export class UserValidation {
     role: z.enum(['TENANT', 'ADMIN']),
     phone: z.string().min(10),
   })
+
+  static readonly RESET:ZodType = z.object({
+    token: z.string().min(8),
+    phone: z.string().min(10),
+    password: z.string().min(8),
+  })
 }

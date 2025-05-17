@@ -8,7 +8,9 @@ async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   const logger = app.get(WINSTON_MODULE_PROVIDER);
   app.useLogger(logger);
-  app.enableCors(); 
+  app.enableCors({
+    allowedHeaders: ['Content-Type', 'Authorization', 'x-api-key'],
+  });
 
   const config = new DocumentBuilder()
     .setTitle('API')

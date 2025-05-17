@@ -127,7 +127,6 @@ export class UserUpdateRequest {
   phone?: string;
 }
 
-
 export class userCreate {
   @ApiProperty({
     example: 'wign',
@@ -152,4 +151,25 @@ export class userCreate {
     required: true,
   })
   phone: string;
+}
+
+export class passwordUpdate {
+  @ApiProperty({
+    example: '081xxxxxx',
+    required: true,
+    description: 'Phone number of the user',
+  })
+  phone: string;
+
+  @ApiProperty({
+    example: 'wign',
+    required: true,
+  })
+  token: string;
+
+  @ApiProperty({
+    example: 'randompassword',
+    required: true,
+  })
+  password: string;
 }
